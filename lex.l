@@ -13,6 +13,9 @@ STRING      \`[^\`]*\`|\"[^\"]*\"
 FLOAT           {DIGIT}+"."{DIGIT}+
 BOOLEAN         true|false
 COMMENT      \/\/.*\n
+MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
+
+
 
 /* Rules */
 %%
@@ -109,7 +112,9 @@ COMMENT      \/\/.*\n
 {STRING}        { printf("STRING: %s\n", yytext); countLiteral++; }
 {FLOAT}         { printf("FLOAT: %s\n", yytext); countLiteral++; }
 {COMMENT}       { printf("COMMENT: %s\n", yytext);}
-
+{MLCOMMENT}     { printf("MULTI-LINE-COMMENT: %s\n", yytext);}
+[^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext);}
+\"(\\.|[^\"\\])*\" { printf("Error: Unmatched string - %s\n", yytext);}
 
 [ \t\n]         ; /* Skip whitespace and newlines */
 .               { printf("INVALID CHARACTER: %s\n", yytext); }
