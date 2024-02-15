@@ -93,6 +93,8 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 ")"             { printf("RPAREN\n"); countPunctuator++; }
 "{"             { printf("LBRACE\n"); countPunctuator++; }
 "}"             { printf("RBRACE\n"); countPunctuator++; }
+"["             { printf("LSQPAREN\n"); countPunctuator++; }
+"]"             { printf("RSQPAREN\n"); countPunctuator++; }
 ";"             { printf("SEMICOLON\n"); countPunctuator++; }
 ","             { printf("COMMA\n"); countPunctuator++; }
 ":"             { printf("COLON\n"); countPunctuator++; }
@@ -114,10 +116,9 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 {COMMENT}       { printf("COMMENT: %s\n", yytext);}
 {MLCOMMENT}     { printf("MULTI-LINE-COMMENT: %s\n", yytext);}
 [^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext);}
-\"(\\.|[^\"\\])*\" { printf("Error: Unmatched string - %s\n", yytext);}
+\"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext);}
 
 [ \t\n]         ; /* Skip whitespace and newlines */
-.               { printf("INVALID CHARACTER: %s\n", yytext); }
 
 %%
 
