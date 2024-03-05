@@ -4,7 +4,8 @@
 #include "y.tab.h"
 int countId = 0, countKeyword = 0, countPunctuator = 0, countOperator = 0, countLiteral = 0;
 %}
-
+%option yylineno
+%option noinput nounput
 /* Regular Definitions */
 DIGIT       [0-9]
 LETTER      [a-zA-Z]
@@ -15,8 +16,6 @@ FLOAT           {DIGIT}+"."{DIGIT}+
 BOOLEAN         true|false
 COMMENT      \/\/.*\n
 MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
-
-
 
 /* Rules */
 %%
@@ -115,7 +114,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 {STRING}        { return STRING; }
 {FLOAT}         { return FLOAT; }
 {COMMENT}       { return COMMENT; }
-{MLCOMMENT}     { return MULTI-LINE-COMMENT; }
+{MLCOMMENT}     { return MULTI_LINE_COMMENT; }
 [^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext); }
 \"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
@@ -123,7 +122,6 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 
 %%
 
-int main() {
-    yylex();
-    return 0;
+int yywrap(void) {
+   return 1;
 }
