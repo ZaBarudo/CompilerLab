@@ -11,98 +11,123 @@
     int success = 1;
 %}
 
-%token PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_SHIFT_ASSIGN RIGHT_SHIFT_ASSIGN INCREMENT DECREMENT RECEIVE CLEAR_ASSIGN SHORT_VAR VARIADIC_PARAM SELECTOR EQUAL_EQUAL NOT_EQUAL LESS_THAN LESS_THAN_OR_EQUAL GREATER_THAN GREATER_THAN_OR_EQUAL LOGICAL_AND LOGICAL_OR LOGICAL_NOT IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN VAR INT_TYPE BOOL_TYPE STRING_TYPE IMPORT FUNCTION PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI-LINE-COMMENT
+%token PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN 
+%token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_SHIFT_ASSIGN RIGHT_SHIFT_ASSIGN INCREMENT DECREMENT RECEIVE CLEAR_ASSIGN 
+%token SHORT_VAR VARIADIC_PARAM SELECTOR EQUAL_EQUAL NOT_EQUAL LESS_THAN LESS_THAN_OR_EQUAL GREATER_THAN GREATER_THAN_OR_EQUAL LOGICAL_AND 
+%token LOGICAL_OR LOGICAL_NOT IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN VAR INT_TYPE BOOL_TYPE STRING_TYPE IMPORT FUNCTION 
+%token PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON 
+%token COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI-LINE-COMMENT
 
 %define parse.error verbose
 %%
 
-program: entry '(' ')' '{' body return '}'
+
+program: PackageClause ';' ImportDecls TopLevelDecls
 ;
 
-
-entry: datatype ID
+PackageClause: PACKAGE PackageName
 ;
 
-datatype: INT 
-| FLOAT 
-| CHAR
+PackageName: IDENTIFIER
 ;
 
-body: block body
+ImportDecls: ImportDecls ImportDecl
+|
+;
+
+ImportDecl: IMPORT ImportSpec
+| IMPORT '(' ImportSpecs')'
+;
+
+ImportSpecs: ImportSpecs ImportSpec
 | 
 ;
 
-block: WHILE '(' condition ')' ':' '{' body '}'
-| IF '(' condition ')' ':' '{' body '}' else
-| statement '.' 
-| PRINTFF '(' STR ')' '.'
-| SCANFF '(' STR ',' '&' ID ')' '.'
+ImportSpec: '.' ImportPath ';'
+| PackageName ImportPath ';'
+| ImportPath ';'
 ;
 
-else: ELSE ':' '{' body '}'
-|
+ImportPath: STRING
 ;
 
-condition: value relop value 
-| TRUE 
-| FALSE
+TopLevelDecls: TopLevelDecls TopLevelDecl
+| 
 ;
 
-statement: DECLARE ID datatype init 
-| ID '=' expression 
-| ID relop expression 
+TopLevelDecl : var_declarations               
+| type_declarations             
+| function_declaration
 ;
 
-init: '=' value 
-|
+var_declarations : VAR declaration                 
+| VAR '(' declaration_list ')'    
 ;
 
-
-expression : expression addops term 
-| term 
+declaration_list : 				                   
+| declaration ';' declaration_list 
 ;
 
-term : term mulops factor 
-| factor 
-; 
+declaration : identifier_list IDENTIFIER                                      
+| identifier_list '(' IDENTIFIER ')'                           
+| identifier_list bracket_list IDENTIFIER                      
+| identifier_list '=' expression_list                           
+| identifier_list IDENTIFIER '=' expression_list               
+| identifier_list '(' IDENTIFIER ')' '=' expression_list      
+| identifier_list bracket_list IDENTIFIER '=' expression_list  
+| identifier_list STRUCT '{' declaration_list '}' 		
+| identifier_list bracket_list STRUCT '{' declaration_list '}'	
 
-factor : base exponent base 
-| LOG '(' value ',' value ')' 
-| base
+identifier_list :  IDENTIFIER                      
+|  IDENTIFIER ',' identifier_list  
 ;
 
-base : value 
-| '(' expression ')' 
+type_declarations : TYPE type_declaration               
+| TYPE '(' type_declaration_list ')'  
 ;
 
+type_declaration : IDENTIFIER IDENTIFIER                                      
+		 | IDENTIFIER '(' IDENTIFIER ')'                             
+		 | IDENTIFIER STRUCT '{' declaration_list '}'                 
+		 | IDENTIFIER bracket_list IDENTIFIER		                
+		 | IDENTIFIER bracket_list STRUCT '{' declaration_list '}'    
+		 ;
 
-exponent: POW
-;
+type_declaration_list : 					                        
+                      | type_declaration ';' type_declaration_list 
+                      ;
 
-mulops: MULT
-| DIV
-;
+function_declaration : FUNC IDENTIFIER signature block_stmt   
+                     ;
 
-addops: ADD 
-| SUB 
-;
+signature : '(' parameters ')' result 	
+          | '(' ')' result 		        
+	      ;
 
-relop: LT
-| GT
-| LE
-| GE
-| EQ
-| NE
-;
+result : 				
+       | IDENTIFIER                   
+       | bracket_list IDENTIFIER      
+       | STRUCT '{' declaration_list '}' 
+       | bracket_list STRUCT '{' declaration_list '}' 
+       ;
 
-value: NUMBER
-| FLOAT_NUM
-| ID
-;
+parameters : parameter_unit			          
+	       | parameter_unit ',' parameters    
+	       ;
 
-return: RETURN value '.' 
-|
-;
+parameter_unit : identifier_list IDENTIFIER  
+               | identifier_list '(' IDENTIFIER ')'      
+               | identifier_list bracket_list IDENTIFIER
+               ;
+
+bracket : '[' INTEGER ']'   
+        | '[' ']'               
+        ;
+
+bracket_list : bracket               
+             | bracket bracket_list  
+             ;
+/* not done with rules */
 
 %%
 

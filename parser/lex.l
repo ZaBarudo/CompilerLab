@@ -9,7 +9,7 @@ int countId = 0, countKeyword = 0, countPunctuator = 0, countOperator = 0, count
 DIGIT       [0-9]
 LETTER      [a-zA-Z]
 IDENTIFIER  {LETTER}({LETTER}|{DIGIT})*
-INTEGER     {DIGIT}+
+INTEGER     [1-9]{DIGIT}+
 STRING      \`[^\`]*\`|\"[^\"]*\"
 FLOAT           {DIGIT}+"."{DIGIT}+
 BOOLEAN         true|false
