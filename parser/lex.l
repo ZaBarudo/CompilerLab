@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"
-int countId = 0, countKeyword = 0, countPunctuator = 0, countOperator = 0, countLiteral = 0;
+int line_no=0;
 %}
 
 /* Regular Definitions */
@@ -89,6 +89,11 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 "select"        { return SELECT; }
 "struct"        { return STRUCT; }
 "type"          { return TYPE; }
+"append"          { return APPEND; }
+"len"          { return LEN; }
+"default"      { return DEFAULT; }
+"print"      { return PRINT; }
+"println"      { return PRINTLN; }
 
 "("             { return LPAREN; }
 ")"             { return RPAREN; }
@@ -115,7 +120,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 {STRING}        { return STRING; }
 {FLOAT}         { return FLOAT; }
 {COMMENT}       { return COMMENT; }
-{MLCOMMENT}     { return MULTI-LINE-COMMENT; }
+{MLCOMMENT}     { return MULTI_LINE_COMMENT; }
 [^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext); }
 \"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
@@ -123,7 +128,6 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 
 %%
 
-int main() {
-    yylex();
-    return 0;
+int yywrap(void) {
+   return 1;
 }
