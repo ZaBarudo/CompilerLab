@@ -19,7 +19,7 @@ func main() {
         println("Iteration:") 
     }
     
-    if a<(1+1) {
+    if a<(1+2) {
         
     }
 

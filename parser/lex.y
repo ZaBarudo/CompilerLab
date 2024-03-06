@@ -34,18 +34,18 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
 
-%type <nd_obj> program PackageClause var_declarations declaration function_declaration expression type literal
+%type <nd_obj> program PackageClause declaration function_declaration expression type literal
 %type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term
+%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing
 
 %define parse.error verbose
 %%
 
 
-program: PackageClause function_declaration
+program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "program"); head = $$.nd; } 
 ;
 
-PackageClause: PACKAGE IDENTIFIER
+PackageClause: PACKAGE IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($1.nd, $2.nd, "package");}
 ;
 
 // PackageName: IDENTIFIER
@@ -73,7 +73,7 @@ PackageClause: PACKAGE IDENTIFIER
 // ;
 /*------*/
 
-var_declarations : VAR declaration                 
+// var_declarations : VAR declaration { $$.nd = $2.nd; }           
 // | VAR LPAREN declaration_list  RPAREN    
 ;
 
@@ -81,11 +81,11 @@ var_declarations : VAR declaration
 // | declaration declaration_list 
 // ;
 
-declaration : IDENTIFIER type                                   
+declaration : VAR IDENTIFIER type { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $3.nd, "variable");}                             
 // | identifier_list LPAREN IDENTIFIER  RPAREN                           
 // | identifier_list bracket_list IDENTIFIER                      
-| IDENTIFIER type ASSIGN expression                           
-| IDENTIFIER ASSIGN expression
+| VAR IDENTIFIER type ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name);  struct node* variable = mknode($2.nd, $3.nd, "variable");$$.nd = mknode(variable, $5.nd, "="); }  
+| VAR IDENTIFIER ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $4.nd, "="); }  
 // | IDENTIFIER type
 // | IDENTIFIER STRING_TYPE ASSIGN expression_list
 // | IDENTIFIER STRING_TYPE        
@@ -113,9 +113,9 @@ declaration : IDENTIFIER type
 
 // type_declaration_list : 					                        
 //                       | type_declaration type_declaration_list 
-                      ;
+                    //   ;
 
-function_declaration : FUNCTION IDENTIFIER LPAREN RPAREN block_stmt   
+function_declaration : FUNCTION IDENTIFIER LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $5.nd, "function"); }
                      ;
 
 // signature : LPAREN parameters RPAREN //result
@@ -136,7 +136,7 @@ function_declaration : FUNCTION IDENTIFIER LPAREN RPAREN block_stmt
 // parameter_unit : identifier_list IDENTIFIER  
 //                | identifier_list LPAREN IDENTIFIER  RPAREN      
 //                | identifier_list bracket_list IDENTIFIER
-               ;
+//               ;
 
 // bracket : '[' INTEGER ']'   
 //         | '[' ']'               
@@ -146,17 +146,17 @@ function_declaration : FUNCTION IDENTIFIER LPAREN RPAREN block_stmt
 //              | bracket bracket_list  
 //              ;
 
-thing : IDENTIFIER
-      | literal
+thing : IDENTIFIER {$$.nd = mknode(NULL, NULL, $1.name);}
+      | literal {$$.nd = $1.nd;}
       ;
 
-term: IDENTIFIER
-    | literal
-    | LPAREN expression RPAREN
+term: IDENTIFIER {$$.nd = mknode(NULL, NULL, $1.name);}
+    | literal {$$.nd = $1.nd;}
+    | LPAREN expression RPAREN {$$.nd = $2.nd;}
     ;
 
-expression : term               
-           | binary_op                         
+expression : term {$$.nd = $1.nd;}     
+           | binary_op {$$.nd = $1.nd;}       
            ;
 
 // primary_expression : IDENTIFIER
@@ -171,40 +171,40 @@ expression : term
 
 
 
-binary_op : expression LOGICAL_OR term           
-         | expression LOGICAL_AND term           
-         | expression EQUAL_EQUAL term         
-         | expression NOT_EQUAL term      
-         | expression LESS_THAN_OR_EQUAL term      
-         | expression GREATER_THAN_OR_EQUAL term      
-         | expression LESS_THAN term            
-         | expression GREATER_THAN term            
-         | expression PLUS term            
-         | expression MINUS term            
-         | expression BITWISE_OR term            
-         | expression BITWISE_XOR term            
-         | expression TIMES term            
-         | expression DIVIDE term            
-         | expression MODULO term            
-         | expression RIGHT_SHIFT term    
-         | expression LEFT_SHIFT term     
-         | expression BITWISE_AND term            
-         | expression BIT_CLEAR term      
+binary_op : expression LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+         | expression LOGICAL_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }              
+         | expression EQUAL_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }            
+         | expression NOT_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+         | expression LESS_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+         | expression GREATER_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+         | expression LESS_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression GREATER_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression PLUS term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression MINUS term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression BITWISE_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression BITWISE_XOR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression TIMES term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression DIVIDE term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression MODULO term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression RIGHT_SHIFT term { $$.nd = mknode($1.nd, $3.nd, $2.name); }       
+         | expression LEFT_SHIFT term { $$.nd = mknode($1.nd, $3.nd, $2.name); }        
+         | expression BITWISE_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
+         | expression BIT_CLEAR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
          ;
 
 
-statement : var_declarations statement	       
-          | simple_stmt statement			
-          | return_stmt statement	
-          | BREAK statement				
-          | CONTINUE statement			
-          | block_stmt statement			
-          | if_stmt	statement
-        //   | switch_stmt statement		
-          | for_stmt statement						
-          | println_stmt statement
-          | COMMENT statement
-          |
+statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}   
+          | simple_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
+          | return_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
+          | BREAK statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  				
+          | CONTINUE statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
+          | block_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
+          | if_stmt	statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
+        //   | switch_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
+          | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  						
+          | println_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
+          | COMMENT statement { $$.nd = mknode(NULL, $2.nd, "COMMENT") ;}  
+          | { $$.nd = NULL ;}  
           ;
 
 // declaration_stmt : var_declarations
@@ -213,97 +213,97 @@ statement : var_declarations statement
 
 simple_stmt :
             // | expression_stmt
-            | inc_dec_stmt
-            | assignment
+              inc_dec_stmt { $$.nd = $1.nd; }
+            | assignment { $$.nd = $1.nd; }
             // | short_variable_declaration
             ;
 
 // expression_stmt : expression	/* weed to make sure its a function call */ { $$ = new_Expr_Simple_Statement($1, @1.first_line); }	
                 // ;
 
-inc_dec_stmt : IDENTIFIER INCREMENT
-             | IDENTIFIER DECREMENT
+inc_dec_stmt : IDENTIFIER INCREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); }
+             | IDENTIFIER DECREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "DECREMENT"); }
              ;
 
 /* https://golang.org/ref/spec#Operands
  The blank identifier may appear as an operand only on the left-hand side of an assignment. */ 
-assignment : IDENTIFIER ASSIGN expression
-           | IDENTIFIER assign_op expression
+assignment : IDENTIFIER ASSIGN expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "="); }
+           | IDENTIFIER assign_op expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, $2.name); }
            ;
 
-assign_op : add_op_eq				
-          | mul_op_eq				
+assign_op : add_op_eq {$$.nd = $1.nd;}
+          | mul_op_eq {$$.nd = $1.nd;}			
           ;
 
-add_op_eq : ADD_ASSIGN
-          | SUB_ASSIGN
-          | OR_ASSIGN
-          | XOR_ASSIGN
+add_op_eq : ADD_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | SUB_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | OR_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | XOR_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
           ;
 
-mul_op_eq : MUL_ASSIGN
-          | DIV_ASSIGN
-          | MOD_ASSIGN
-          | LEFT_SHIFT_ASSIGN
-          | RIGHT_SHIFT_ASSIGN
-          | AND_ASSIGN
-          | CLEAR_ASSIGN
+mul_op_eq : MUL_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | DIV_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | MOD_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | LEFT_SHIFT_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | RIGHT_SHIFT_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | AND_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
+          | CLEAR_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
           ;
 
 // short_variable_declaration : expression SHORT_VAR expression
 //                            ;
 
-return_stmt : RETURN
-            | RETURN thing
+return_stmt : RETURN { $$.nd = mknode(NULL, NULL, "RETURN"); }
+            | RETURN thing { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $2.nd, "RETURN"); }
             ;
 
-block_stmt : LBRACE statement RBRACE
-        //    | LBRACE RBRACE
+block_stmt : LBRACE RBRACE
+           | LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
 // statement_list : statement 
 //                | statement statement_list
 //                ;
 
-boolean_exp: term LOGICAL_OR term           
-         | term LOGICAL_AND term           
-         | term EQUAL_EQUAL term         
-         | term NOT_EQUAL term      
-         | term LESS_THAN_OR_EQUAL term      
-         | term GREATER_THAN_OR_EQUAL term      
-         | term LESS_THAN term            
-         | term GREATER_THAN term
+boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }     
+         | term LOGICAL_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }        
+         | term EQUAL_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }      
+         | term NOT_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
+         | term LESS_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
+         | term GREATER_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
+         | term LESS_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+         | term GREATER_THAN term  { $$.nd = mknode($1.nd, $3.nd, $2.name); }
         ;       
 
-if_stmt : IF boolean_exp block_stmt
+if_stmt : IF boolean_exp block_stmt  { $$.nd = mknode($2.nd, $3.nd, "IF"); }
         // | IF simple_stmt term block_stmt
 	    // | IF simple_stmt expression block_stmt ELSE if_stmt
 	    // | IF simple_stmt expression block_stmt ELSE block_stmt
-        | IF boolean_exp block_stmt ELSE if_stmt
-        | IF boolean_exp block_stmt ELSE block_stmt
+        | IF boolean_exp block_stmt ELSE if_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART"); $$.nd = mknode(cond_if, $5.nd, "IF-ELSE-IF"); }
+        | IF boolean_exp block_stmt ELSE block_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART");  $$.nd = mknode(cond_if, $5.nd, "IF-ELSE"); }
         ;
 
 
-for_stmt : FOR for_clause block_stmt
+for_stmt : FOR for_clause block_stmt  { $$.nd = mknode($2.nd, $3.nd, "FOR"); }
         //  | FOR expression block_stmt
         //  | FOR block_stmt
          ;
 
-for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt
+for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
         //    | simple_stmt SEMICOLON simple_stmt
            ;
 
-println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN
-             | PRINTLN LPAREN STRING RPAREN
+println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
+             | PRINTLN LPAREN STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name);$$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
 
-type : INT_TYPE
-     | STRING_TYPE
-     | BOOL_TYPE
+type : INT_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
+     | STRING_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
+     | BOOL_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
 
-literal : INTEGER                           
-        | STRING                             
-        | FLOAT                              
-        | BOOLEAN                       
+literal : INTEGER {$$.nd = mknode(NULL, NULL, $1.name);}                        
+        | STRING {$$.nd = mknode(NULL, NULL, $1.name);}                      
+        | FLOAT {$$.nd = mknode(NULL, NULL, $1.name);}                        
+        | BOOLEAN {$$.nd = mknode(NULL, NULL, $1.name);}                   
         ;
 %%
 
@@ -313,6 +313,11 @@ int main() {
     yyparse();
     if(success)
         printf("Parsing Successful\n");
+    printf("\n\n");
+    printf("PARSE TREE");
+    printf("\n\n");
+	printBT(head);
+    printf("\n\n");
     return 0;
 }
 
