@@ -9,7 +9,7 @@ int line_no=0;
 DIGIT       [0-9]
 LETTER      [a-zA-Z]
 IDENTIFIER  {LETTER}({LETTER}|{DIGIT})*
-INTEGER     [1-9]{DIGIT}+
+INTEGER     [0-9]{DIGIT}*
 STRING      \`[^\`]*\`|\"[^\"]*\"
 FLOAT           {DIGIT}+"."{DIGIT}+
 BOOLEAN         true|false

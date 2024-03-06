@@ -3,7 +3,7 @@
     #include<string.h>
     #include<stdlib.h>
     #include<ctype.h>
-    
+    #define YYDEBUG 1
     int yyerror(const char *s);
     int yylex(void);
     int yywrap();
@@ -21,7 +21,7 @@
 %%
 
 
-program: PackageClause ImportDecls TopLevelDecls
+program: PackageClause ImportDecls function_declaration
 ;
 
 PackageClause: PACKAGE PackageName
@@ -52,39 +52,33 @@ ImportPath: STRING
 ;
 /*------*/
 
-TopLevelDecls: TopLevelDecls TopLevelDecl
-| 
-;
-
-TopLevelDecl : var_declarations               
-| type_declarations             
-| function_declaration
-;
-
 var_declarations : VAR declaration                 
-| VAR LPAREN declaration_list  RPAREN    
+// | VAR LPAREN declaration_list  RPAREN    
 ;
 
 declaration_list : 				                   
 | declaration declaration_list 
 ;
 
-declaration : identifier_list IDENTIFIER                                      
-| identifier_list LPAREN IDENTIFIER  RPAREN                           
-| identifier_list bracket_list IDENTIFIER                      
+declaration : identifier_list                                   
+// | identifier_list LPAREN IDENTIFIER  RPAREN                           
+// | identifier_list bracket_list IDENTIFIER                      
 | identifier_list ASSIGN expression_list                           
-| identifier_list IDENTIFIER ASSIGN expression_list               
-| identifier_list LPAREN IDENTIFIER  RPAREN ASSIGN expression_list      
-| identifier_list bracket_list IDENTIFIER ASSIGN expression_list  
-| identifier_list STRUCT LBRACE declaration_list RBRACE 		
-| identifier_list bracket_list STRUCT LBRACE declaration_list RBRACE	
+| IDENTIFIER INT_TYPE ASSIGN expression_list
+| IDENTIFIER INT_TYPE
+| IDENTIFIER STRING_TYPE ASSIGN expression_list
+| IDENTIFIER STRING_TYPE        
+// | identifier_list LPAREN IDENTIFIER  RPAREN ASSIGN expression_list      
+// | identifier_list bracket_list IDENTIFIER ASSIGN expression_list  
+// | identifier_list STRUCT LBRACE declaration_list RBRACE 		
+// | identifier_list bracket_list STRUCT LBRACE declaration_list RBRACE	
 
-identifier_list :                     
-|  IDENTIFIER COMMA identifier_list  
+identifier_list : IDENTIFIER          
+|  IDENTIFIER COMMA identifier_list
 ;
 
 type_declarations : TYPE type_declaration               
-| TYPE LPAREN type_declaration_list  RPAREN  
+// | TYPE LPAREN type_declaration_list  RPAREN  
 ;
 
 type_declaration : IDENTIFIER IDENTIFIER                                      
@@ -94,8 +88,8 @@ type_declaration : IDENTIFIER IDENTIFIER
 		 | IDENTIFIER bracket_list STRUCT LBRACE declaration_list RBRACE    
 		 ;
 
-type_declaration_list : 					                        
-                      | type_declaration type_declaration_list 
+// type_declaration_list : 					                        
+//                       | type_declaration type_declaration_list 
                       ;
 
 function_declaration : FUNCTION IDENTIFIER signature block_stmt   
@@ -132,7 +126,7 @@ bracket_list : bracket
 /* changing from here */
 
 expression_list : expression                        
-                | expression COMMA expression_list    
+                | expression COMMA expression_list
                 ;
 
 expression : primary_expression                   
@@ -180,17 +174,19 @@ builtin : APPEND LPAREN expression COMMA expression  RPAREN
         | LEN LPAREN expression  RPAREN                       
         ;
 
-statement : declaration_stmt		       
-          | simple_stmt				
-          | return_stmt 			
-          | break_stmt				
-          | continue_stmt			
-          | block_stmt				
-          | if_stmt				
-          | switch_stmt 			
-          | for_stmt				
-          | print_stmt				
-          | println_stmt	
+statement : declaration_stmt statement	       
+          | simple_stmt	statement			
+          | return_stmt statement	
+          | break_stmt statement				
+          | continue_stmt statement			
+          | block_stmt statement			
+          | if_stmt	statement		
+          | switch_stmt statement		
+          | for_stmt statement				
+          | print_stmt statement			
+          | println_stmt statement
+          | COMMENT statement
+          |
           ;
 
 declaration_stmt : var_declarations
@@ -249,13 +245,13 @@ break_stmt : BREAK
 continue_stmt : CONTINUE
               ;
 
-block_stmt : LBRACE statement_list RBRACE
+block_stmt : LBRACE statement RBRACE
            | LBRACE RBRACE
            ; 
 
-statement_list : statement 
-               | statement statement_list
-               ;
+// statement_list : statement 
+//                | statement statement_list
+//                ;
 
 if_stmt : IF expression block_stmt
         | IF simple_stmt expression block_stmt
@@ -277,9 +273,9 @@ switch_on : /* empty */
           | expression
           ;
 
-expression_case_clause : CASE expression_list  ':' statement_list
+expression_case_clause : CASE expression_list  ':' statement
                        | CASE expression_list  ':'
-                       | DEFAULT ':' statement_list
+                       | DEFAULT ':' statement
                        | DEFAULT ':'
 	               | DEFAULT
 	               ;
@@ -295,8 +291,8 @@ for_stmt : FOR block_stmt
          | FOR for_clause block_stmt
          ;
 
-for_clause : simple_stmt simple_stmt
-           | simple_stmt expression simple_stmt
+for_clause : simple_stmt SEMICOLON simple_stmt
+           | simple_stmt SEMICOLON expression SEMICOLON simple_stmt
            ;
 
 print_stmt : PRINT LPAREN expression_list  RPAREN

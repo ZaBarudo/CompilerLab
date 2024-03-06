@@ -3,5 +3,5 @@ package main
 import "fmt"
 
 func main(){
-    println("a")
+    var a int = 1    
 }
