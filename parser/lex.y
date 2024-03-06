@@ -56,9 +56,9 @@ var_declarations : VAR declaration
 // | VAR LPAREN declaration_list  RPAREN    
 ;
 
-declaration_list : 				                   
-| declaration declaration_list 
-;
+// declaration_list : 				                   
+// | declaration declaration_list 
+// ;
 
 declaration : identifier_list                                   
 // | identifier_list LPAREN IDENTIFIER  RPAREN                           
@@ -77,16 +77,16 @@ identifier_list : IDENTIFIER
 |  IDENTIFIER COMMA identifier_list
 ;
 
-type_declarations : TYPE type_declaration               
+// type_declarations : TYPE type_declaration               
 // | TYPE LPAREN type_declaration_list  RPAREN  
 ;
 
-type_declaration : IDENTIFIER IDENTIFIER                                      
-		 | IDENTIFIER LPAREN IDENTIFIER  RPAREN                             
-		 | IDENTIFIER STRUCT LBRACE declaration_list RBRACE                 
-		 | IDENTIFIER bracket_list IDENTIFIER		                
-		 | IDENTIFIER bracket_list STRUCT LBRACE declaration_list RBRACE    
-		 ;
+// type_declaration : IDENTIFIER IDENTIFIER                                      
+// 		 | IDENTIFIER LPAREN IDENTIFIER  RPAREN                             
+// 		 | IDENTIFIER STRUCT LBRACE declaration_list RBRACE                 
+// 		 | IDENTIFIER bracket_list IDENTIFIER		                
+// 		 | IDENTIFIER bracket_list STRUCT LBRACE declaration_list RBRACE    
+// 		 ;
 
 // type_declaration_list : 					                        
 //                       | type_declaration type_declaration_list 
@@ -181,7 +181,7 @@ statement : declaration_stmt statement
           | continue_stmt statement			
           | block_stmt statement			
           | if_stmt	statement		
-          | switch_stmt statement		
+        //   | switch_stmt statement		
           | for_stmt statement				
           | print_stmt statement			
           | println_stmt statement
@@ -190,7 +190,7 @@ statement : declaration_stmt statement
           ;
 
 declaration_stmt : var_declarations
-                 | type_declarations
+                //  | type_declarations
                  ;
 
 simple_stmt :
@@ -261,30 +261,30 @@ if_stmt : IF expression block_stmt
         | IF expression block_stmt ELSE block_stmt
         ;
 
-switch_stmt : expression_switch_stmt
+// switch_stmt : expression_switch_stmt
             ;               
 
-expression_switch_stmt : SWITCH switch_on LBRACE expression_case_clause_list RBRACE
-                       ;
+// expression_switch_stmt : SWITCH switch_on LBRACE expression_case_clause_list RBRACE
+//                        ;
 
-switch_on : /* empty */
-          | simple_stmt expression
-          | simple_stmt
-          | expression
-          ;
+// switch_on : /* empty */
+//           | simple_stmt expression
+//           | simple_stmt
+//           | expression
+//           ;
 
-expression_case_clause : CASE expression_list  ':' statement
-                       | CASE expression_list  ':'
-                       | DEFAULT ':' statement
-                       | DEFAULT ':'
-	               | DEFAULT
-	               ;
+// expression_case_clause : CASE expression_list  ':' statement
+//                        | CASE expression_list  ':'
+//                        | DEFAULT ':' statement
+//                        | DEFAULT ':'
+// 	               | DEFAULT
+// 	               ;
 
 /* weed to check maximum 1 default in a switch statement */
 
-expression_case_clause_list : /* empty */
-                            | expression_case_clause_list expression_case_clause
-                            ;
+// expression_case_clause_list : /* empty */
+//                             | expression_case_clause_list expression_case_clause
+//                             ;
 
 for_stmt : FOR block_stmt
          | FOR expression block_stmt
