@@ -4,6 +4,7 @@
 #include "y.tab.h"
 int line_no=0;
 %}
+%option yylineno
 
 /* Regular Definitions */
 DIGIT       [0-9]
@@ -125,6 +126,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 \"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
 [ \t\n\r]         { ; } /* Skip whitespace and newlines */
+\n              { yylineno++; }
 
 %%
 

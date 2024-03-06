@@ -8,6 +8,7 @@
     int yylex(void);
     int yywrap();
     int success = 1;
+    extern int yylineno;
 %}
 
 %token PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN 
