@@ -8,15 +8,33 @@
     int yylex(void);
     int yywrap();
     int success = 1;
-    extern int yylineno;
+    struct node* mknode(struct node *left, struct node *right, char *token);
+    void printBT(struct node*);
+
+    // int success = 1;
+    struct node *head;
+    struct node { 
+        struct node *left; 
+        struct node *right; 
+        char *token; 
+    };
 %}
 
-%token PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN 
-%token DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_SHIFT_ASSIGN RIGHT_SHIFT_ASSIGN INCREMENT DECREMENT RECEIVE CLEAR_ASSIGN 
-%token SHORT_VAR VARIADIC_PARAM SELECTOR EQUAL_EQUAL NOT_EQUAL LESS_THAN LESS_THAN_OR_EQUAL GREATER_THAN GREATER_THAN_OR_EQUAL LOGICAL_AND 
-%token LOGICAL_OR LOGICAL_NOT IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN VAR INT_TYPE BOOL_TYPE STRING_TYPE IMPORT FUNCTION APPEND LEN PRINT PRINTLN
-%token PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
-%token COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
+%union { 
+	struct var_name { 
+		char name[100]; 
+		struct node* nd;
+	} nd_obj; 
+}
+
+%token <nd_obj> PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN 
+%token <nd_obj> DIV_ASSIGN MOD_ASSIGN AND_ASSIGN OR_ASSIGN XOR_ASSIGN LEFT_SHIFT_ASSIGN RIGHT_SHIFT_ASSIGN INCREMENT DECREMENT RECEIVE CLEAR_ASSIGN 
+%token <nd_obj> SHORT_VAR VARIADIC_PARAM SELECTOR EQUAL_EQUAL NOT_EQUAL LESS_THAN LESS_THAN_OR_EQUAL GREATER_THAN GREATER_THAN_OR_EQUAL LOGICAL_AND 
+%token <nd_obj> LOGICAL_OR LOGICAL_NOT IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN VAR INT_TYPE BOOL_TYPE STRING_TYPE IMPORT FUNCTION APPEND LEN PRINT PRINTLN
+%token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
+%token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
+
+%type <nd_obj> program PackageClause ImportDecls ImportDecl var_declarations declaration identifier_list function_declaration signature parameters expression_list expression
 
 %define parse.error verbose
 %%
@@ -25,32 +43,32 @@
 program: PackageClause ImportDecls function_declaration
 ;
 
-PackageClause: PACKAGE PackageName
+PackageClause: PACKAGE IDENTIFIER
 ;
 
-PackageName: IDENTIFIER
-;
+// PackageName: IDENTIFIER
+// ;
 
-ImportDecls: ImportDecls ImportDecl
-|
-;
-
-ImportDecl: IMPORT ImportSpecs
-| IMPORT LPAREN ImportSpecs RPAREN
-;
-
-ImportSpecs: ImportSpecs ImportSpec
+ImportDecls: ImportDecl ImportDecls
 | 
 ;
 
-
-ImportSpec: '.' ImportPath 
-| PackageName ImportPath 
-| ImportPath
+ImportDecl: IMPORT STRING
+// | IMPORT LPAREN ImportSpecs RPAREN
 ;
 
-ImportPath: STRING
-;
+// ImportSpecs: ImportSpecs STRING
+// | 
+// ;
+
+
+// ImportSpec: '.' STRING 
+// | IDENTIFIER STRING 
+// | STRING
+// ;
+
+// ImportPath: STRING
+// ;
 /*------*/
 
 var_declarations : VAR declaration                 
@@ -65,17 +83,19 @@ declaration : identifier_list
 // | identifier_list LPAREN IDENTIFIER  RPAREN                           
 // | identifier_list bracket_list IDENTIFIER                      
 | identifier_list ASSIGN expression_list                           
-| IDENTIFIER INT_TYPE ASSIGN expression_list
-| IDENTIFIER INT_TYPE
-| IDENTIFIER STRING_TYPE ASSIGN expression_list
-| IDENTIFIER STRING_TYPE        
+| IDENTIFIER ASSIGN expression_list
+// | IDENTIFIER type
+// | IDENTIFIER STRING_TYPE ASSIGN expression_list
+// | IDENTIFIER STRING_TYPE        
 // | identifier_list LPAREN IDENTIFIER  RPAREN ASSIGN expression_list      
 // | identifier_list bracket_list IDENTIFIER ASSIGN expression_list  
 // | identifier_list STRUCT LBRACE declaration_list RBRACE 		
 // | identifier_list bracket_list STRUCT LBRACE declaration_list RBRACE	
 
-identifier_list : IDENTIFIER          
-|  IDENTIFIER COMMA identifier_list
+identifier_list : IDENTIFIER type
+// | IDENTIFIER    
+| IDENTIFIER type COMMA identifier_list
+
 ;
 
 // type_declarations : TYPE type_declaration               
@@ -107,22 +127,22 @@ signature : LPAREN parameters RPAREN //result
 //        | bracket_list STRUCT LBRACE declaration_list RBRACE 
 //        ;
 
-parameters : parameter_unit			          
-	       | parameter_unit COMMA parameters    
+parameters : identifier_list			          
+	    //    | parameter_unit COMMA parameters    
 	       ;
 
-parameter_unit : identifier_list IDENTIFIER  
-               | identifier_list LPAREN IDENTIFIER  RPAREN      
-               | identifier_list bracket_list IDENTIFIER
+// parameter_unit : identifier_list IDENTIFIER  
+//                | identifier_list LPAREN IDENTIFIER  RPAREN      
+//                | identifier_list bracket_list IDENTIFIER
                ;
 
-bracket : '[' INTEGER ']'   
-        | '[' ']'               
-        ;
+// bracket : '[' INTEGER ']'   
+//         | '[' ']'               
+//         ;
 
-bracket_list : bracket               
-             | bracket bracket_list  
-             ;
+// bracket_list : bracket               
+//              | bracket bracket_list  
+//              ;
 
 /* changing from here */
 
@@ -135,14 +155,18 @@ expression : primary_expression
            | builtin                
            ;
 
-primary_expression : IDENTIFIER                                
-                   | literal                                    
-                   | LPAREN expression  RPAREN                         
-                   | primary_expression LPAREN expression_list  RPAREN 
-                   | primary_expression LPAREN  RPAREN                 
-                   | primary_expression '.' IDENTIFIER         
-                   | primary_expression '[' expression ']'      
+primary_expression : IDENTIFIER
+                   | literal
+                //    | LPAREN expression  RPAREN
+                //    | primary_expression LPAREN expression_list  RPAREN 
+                //    | primary_expression LPAREN  RPAREN                 
+                //    | primary_expression '.' IDENTIFIER         
+                //    | primary_expression '[' expression ']'      
                    ;
+
+type : INT_TYPE
+     | STRING_TYPE
+     | BOOL_TYPE
 
 literal : INTEGER                           
         | STRING                             
@@ -150,25 +174,25 @@ literal : INTEGER
         | BOOLEAN                       
         ;
 
-binary_op : expression LOGICAL_OR expression           
-         | expression LOGICAL_AND expression           
-         | expression EQUAL_EQUAL expression         
-         | expression NOT_EQUAL expression      
-         | expression LESS_THAN_OR_EQUAL expression      
-         | expression GREATER_THAN_OR_EQUAL expression      
-         | expression LESS_THAN expression            
-         | expression GREATER_THAN expression            
-         | expression PLUS expression            
-         | expression MINUS expression            
-         | expression BITWISE_OR expression            
-         | expression BITWISE_XOR expression            
-         | expression TIMES expression            
-         | expression DIVIDE expression            
-         | expression MODULO expression            
-         | expression RIGHT_SHIFT expression    
-         | expression LEFT_SHIFT expression     
-         | expression BITWISE_AND expression            
-         | expression BIT_CLEAR expression      
+binary_op : primary_expression LOGICAL_OR primary_expression           
+         | primary_expression LOGICAL_AND primary_expression           
+         | primary_expression EQUAL_EQUAL primary_expression         
+         | primary_expression NOT_EQUAL primary_expression      
+         | primary_expression LESS_THAN_OR_EQUAL primary_expression      
+         | primary_expression GREATER_THAN_OR_EQUAL primary_expression      
+         | primary_expression LESS_THAN primary_expression            
+         | primary_expression GREATER_THAN primary_expression            
+         | primary_expression PLUS primary_expression            
+         | primary_expression MINUS primary_expression            
+         | primary_expression BITWISE_OR primary_expression            
+         | primary_expression BITWISE_XOR primary_expression            
+         | primary_expression TIMES primary_expression            
+         | primary_expression DIVIDE primary_expression            
+         | primary_expression MODULO primary_expression            
+         | primary_expression RIGHT_SHIFT primary_expression    
+         | primary_expression LEFT_SHIFT primary_expression     
+         | primary_expression BITWISE_AND primary_expression            
+         | primary_expression BIT_CLEAR primary_expression      
          ;
 
 builtin : APPEND LPAREN expression COMMA expression  RPAREN     
@@ -176,12 +200,12 @@ builtin : APPEND LPAREN expression COMMA expression  RPAREN
         ;
 
 statement : declaration_stmt statement	       
-          | simple_stmt	statement			
+          | simple_stmt statement			
           | return_stmt statement	
           | break_stmt statement				
           | continue_stmt statement			
           | block_stmt statement			
-          | if_stmt	statement		
+          | if_stmt	statement
         //   | switch_stmt statement		
           | for_stmt statement				
           | print_stmt statement			
@@ -204,8 +228,8 @@ simple_stmt :
 // expression_stmt : expression	/* weed to make sure its a function call */ { $$ = new_Expr_Simple_Statement($1, @1.first_line); }	
                 // ;
 
-inc_dec_stmt : expression INCREMENT
-             | expression DECREMENT
+inc_dec_stmt : IDENTIFIER INCREMENT
+             | IDENTIFIER DECREMENT
              ;
 
 /* https://golang.org/ref/spec#Operands
@@ -237,7 +261,7 @@ short_variable_declaration : expression_list SHORT_VAR expression_list
                            ;
 
 return_stmt : RETURN
-            | RETURN expression
+            | RETURN primary_expression
             ;
 
 break_stmt : BREAK
@@ -254,46 +278,31 @@ block_stmt : LBRACE statement RBRACE
 //                | statement statement_list
 //                ;
 
-if_stmt : IF expression block_stmt
-        | IF simple_stmt expression block_stmt
-	    | IF simple_stmt expression block_stmt ELSE if_stmt
-	    | IF simple_stmt expression block_stmt ELSE block_stmt
-        | IF expression block_stmt ELSE if_stmt
-        | IF expression block_stmt ELSE block_stmt
+boolean_op: primary_expression LOGICAL_OR primary_expression           
+         | primary_expression LOGICAL_AND primary_expression           
+         | primary_expression EQUAL_EQUAL primary_expression         
+         | primary_expression NOT_EQUAL primary_expression      
+         | primary_expression LESS_THAN_OR_EQUAL primary_expression      
+         | primary_expression GREATER_THAN_OR_EQUAL primary_expression      
+         | primary_expression LESS_THAN primary_expression            
+         | primary_expression GREATER_THAN primary_expression      
+
+if_stmt : IF boolean_op block_stmt
+        // | IF simple_stmt expression block_stmt
+	    // | IF simple_stmt expression block_stmt ELSE if_stmt
+	    // | IF simple_stmt expression block_stmt ELSE block_stmt
+        | IF boolean_op block_stmt ELSE if_stmt
+        | IF boolean_op block_stmt ELSE block_stmt
         ;
 
-// switch_stmt : expression_switch_stmt
-            ;               
 
-// expression_switch_stmt : SWITCH switch_on LBRACE expression_case_clause_list RBRACE
-//                        ;
-
-// switch_on : /* empty */
-//           | simple_stmt expression
-//           | simple_stmt
-//           | expression
-//           ;
-
-// expression_case_clause : CASE expression_list  ':' statement
-//                        | CASE expression_list  ':'
-//                        | DEFAULT ':' statement
-//                        | DEFAULT ':'
-// 	               | DEFAULT
-// 	               ;
-
-/* weed to check maximum 1 default in a switch statement */
-
-// expression_case_clause_list : /* empty */
-//                             | expression_case_clause_list expression_case_clause
-//                             ;
-
-for_stmt : FOR block_stmt
-         | FOR expression block_stmt
-         | FOR for_clause block_stmt
+for_stmt : FOR for_clause block_stmt
+        //  | FOR expression block_stmt
+        //  | FOR block_stmt
          ;
 
-for_clause : simple_stmt SEMICOLON simple_stmt
-           | simple_stmt SEMICOLON expression SEMICOLON simple_stmt
+for_clause : simple_stmt SEMICOLON boolean_op SEMICOLON simple_stmt
+        //    | simple_stmt SEMICOLON simple_stmt
            ;
 
 print_stmt : PRINT LPAREN expression_list  RPAREN
@@ -301,9 +310,6 @@ print_stmt : PRINT LPAREN expression_list  RPAREN
 
 println_stmt : PRINTLN LPAREN expression_list  RPAREN
              | PRINTLN LPAREN  RPAREN
-
-
-/* not done with rules */
 
 %%
 

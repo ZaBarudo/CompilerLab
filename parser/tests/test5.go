@@ -1,11 +1,14 @@
 package main
 
 import "fmt"
+import "temp"
 
 func main() {
-    var b int = 5
+    var b = 5
+	var a int = 10
 	var a int = 10
     var result int
+    var a int, b int // if not assigning value, then specify type
     
     result = a + b
     println("Addition:", result)
@@ -21,9 +24,13 @@ func main() {
         println("Iteration:", i) 
     }
     
-    j := 0
-    for j < 5 {
-        println("Iteration (while loop):", j)
-        j++
+    if a<1 {
+        
     }
+
+    j := 0
+    // for j < 5 {
+    //     println("Iteration (while loop):", j)
+    //     j++
+    // }
 }
