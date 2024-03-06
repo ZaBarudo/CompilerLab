@@ -5,6 +5,6 @@ func add(a, b int) int {
 }
 
 func main() {
-    resultlskdjflsdkjflkjdslkfjsdljflsdjflsdkfjlesdjflsdjdfokjr89ii68ok := add(10, 20)
-    println("Result:", resultlskdjflsdkjflkjdslkfjsdljflsdjflsdkfjlesdjflsdjdfokjr89ii68ok)
+    resultl := add(10, 20)
+    println("Result:", resultl)
 }
