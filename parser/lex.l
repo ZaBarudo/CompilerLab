@@ -89,7 +89,6 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 "range"         { return RANGE; }
 "select"        { return SELECT; }
 "struct"        { return STRUCT; }
-"default"      { return DEFAULT; }
 "println"      { return PRINTLN; }
 
 "("             { return LPAREN; }
@@ -123,7 +122,6 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 
 [ \t\n\r]         { ; } /* Skip whitespace and newlines */
 \n              { yylineno++; }
-
 %%
 
 int yywrap(void) {
