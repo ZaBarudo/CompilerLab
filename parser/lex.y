@@ -34,7 +34,8 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
 
-%type <nd_obj> program PackageClause ImportDecls ImportDecl var_declarations declaration identifier_list function_declaration signature parameters expression_list expression
+%type <nd_obj> program PackageClause ImportDecls ImportDecl var_declarations declaration identifier_list function_declaration signature parameters expression_list expression primary_expression type literal
+%type <nd_obj> binary_op statement simple_stmt inc_dec_stmt
 
 %define parse.error verbose
 %%
@@ -151,14 +152,13 @@ expression_list : expression
                 ;
 
 expression : primary_expression                   
-           | binary_op              
-           | builtin                
+           | binary_op                            
            ;
 
 primary_expression : IDENTIFIER
                    | literal
-                //    | LPAREN expression  RPAREN
-                //    | primary_expression LPAREN expression_list  RPAREN 
+                   | LPAREN expression  RPAREN
+                   | primary_expression LPAREN expression_list  RPAREN 
                 //    | primary_expression LPAREN  RPAREN                 
                 //    | primary_expression '.' IDENTIFIER         
                 //    | primary_expression '[' expression ']'      
@@ -195,26 +195,22 @@ binary_op : primary_expression LOGICAL_OR primary_expression
          | primary_expression BIT_CLEAR primary_expression      
          ;
 
-builtin : APPEND LPAREN expression COMMA expression  RPAREN     
-        | LEN LPAREN expression  RPAREN                       
-        ;
 
-statement : declaration_stmt statement	       
+statement : var_declarations statement	       
           | simple_stmt statement			
           | return_stmt statement	
-          | break_stmt statement				
-          | continue_stmt statement			
+          | BREAK statement				
+          | CONTINUE statement			
           | block_stmt statement			
           | if_stmt	statement
         //   | switch_stmt statement		
-          | for_stmt statement				
-          | print_stmt statement			
+          | for_stmt statement						
           | println_stmt statement
           | COMMENT statement
           |
           ;
 
-declaration_stmt : var_declarations
+// declaration_stmt : var_declarations
                 //  | type_declarations
                  ;
 
@@ -264,12 +260,6 @@ return_stmt : RETURN
             | RETURN primary_expression
             ;
 
-break_stmt : BREAK
-           ;
-
-continue_stmt : CONTINUE
-              ;
-
 block_stmt : LBRACE statement RBRACE
            | LBRACE RBRACE
            ; 
@@ -304,9 +294,6 @@ for_stmt : FOR for_clause block_stmt
 for_clause : simple_stmt SEMICOLON boolean_op SEMICOLON simple_stmt
         //    | simple_stmt SEMICOLON simple_stmt
            ;
-
-print_stmt : PRINT LPAREN expression_list  RPAREN
-           | PRINT LPAREN  RPAREN
 
 println_stmt : PRINTLN LPAREN expression_list  RPAREN
              | PRINTLN LPAREN  RPAREN

@@ -89,11 +89,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 "range"         { return RANGE; }
 "select"        { return SELECT; }
 "struct"        { return STRUCT; }
-"type"          { return TYPE; }
-"append"          { return APPEND; }
-"len"          { return LEN; }
 "default"      { return DEFAULT; }
-"print"      { return PRINT; }
 "println"      { return PRINTLN; }
 
 "("             { return LPAREN; }

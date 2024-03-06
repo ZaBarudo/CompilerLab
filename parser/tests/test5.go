@@ -13,7 +13,7 @@ func main() {
     result = a + b
     println("Addition:", result)
     
-    result = a - b
+    result = a + (a - b) + (1)
     println("Subtraction:", result) 
     result = a * b
     println("Multiplication:", result) 
