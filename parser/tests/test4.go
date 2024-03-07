@@ -1,29 +1,32 @@
-package model
+package main
 
-import (
-	"github.com/jinzhu/gorm"
+func main() {
+    var b = 5
+	var a int = 10
+	var a int = 10
+    var result int
+    var a int
+    result = a + b
+    println("Addition:")
+    
+    result = a + (a - b) + (1)
+    println("Subtraction:") 
+    result = a * b
+    println("Multiplication:") 
+    result = a / b
+    println("Division:") 
+    for i = 0; i < 5; i++ {
+        println("Iteration:") 
+    }
+    
+    if a<(1+2) {
+        
+    }
 
-	"github.com/jinzhu/gorm/dialects/mysql"
-)
-
-type Employee struct {
-	gorm.Model
-	Name string `gorm:"unique" json:"name"`
-	City string `json:"city"`
-	Age int `json:"age"`
-	Status bool `json:"status"`
-}
-
-func (e *Employee) Disable() {
-	e.Status = false
-}
-
-func (p *Employee) Enable() {
-	p.Status = true
-}
-
-// DBMigrate will create and migrate the tables, and then make the some relationships if necessary
-func DBMigrate(db *gorm.DB) *gorm.DB {
-	db.AutoMigrate(&Employee{})
-	return db
+    
+    j = 0
+    // for j < 5 {
+    //     println("Iteration (while loop):", j)
+    //     j++
+    // }
 }

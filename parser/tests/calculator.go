@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"os"
-	"strconv"
-)
 
 func add(x, y float64) float64 {
 	return x + y
@@ -29,8 +24,7 @@ func divide(x, y float64) float64 {
 
 func main() {
 	if len(os.Args) != 4 {
-		fmt.Println("Usage: calculator <number> <operator> <number>")
-		os.Exit(1)
+		println("Usage: calculator <number> <operator> <number>")
 	}
 
 	arg1, err := strconv.ParseFloat(os.Args[1], 64)

@@ -1,8 +1,5 @@
 package main
 
-import "fmt"
-import "temp"
-
 func main(){
     var a int = 1
     var b int

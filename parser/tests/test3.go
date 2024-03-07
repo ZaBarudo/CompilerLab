@@ -1,10 +1,10 @@
 package main
 
-func add(a, b int) int {
-    return a + b
-}
-
 func main() {
-    resultl := add(10, 20)
-    println("Result:", resultl)
+    var a int = 10
+    var b int = 20
+
+    resultl = a + b
+    println("Result:")
+    println(resultl)
 }
