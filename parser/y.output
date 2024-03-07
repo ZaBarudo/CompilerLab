@@ -32,9 +32,6 @@ Terminals unused in grammar
     MULTI_LINE_COMMENT
 
 
-State 17 conflicts: 1 shift/reduce
-
-
 Grammar
 
     0 $accept: program $end
@@ -81,7 +78,7 @@ Grammar
 
    33 statement: declaration statement
    34          | simple_stmt statement
-   35          | return_stmt statement
+   35          | return_stmt
    36          | BREAK statement
    37          | CONTINUE statement
    38          | block_stmt statement
@@ -276,7 +273,7 @@ Nonterminals, with rules where they appear
         on right: 13
     statement <nd_obj> (99)
         on left: 33 34 35 36 37 38 39 40 41 42 43
-        on right: 33 34 35 36 37 38 39 40 41 42 66
+        on right: 33 34 36 37 38 39 40 41 42 66
     simple_stmt <nd_obj> (100)
         on left: 44 45
         on right: 34 79
@@ -543,25 +540,11 @@ State 17
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    IDENTIFIER  [reduce using rule 65 (return_)]
-    $default    reduce using rule 65 (return_)
+    $default  reduce using rule 65 (return_)
 
     thing    go to state 47
     return_  go to state 48
     literal  go to state 49
-
-    shift/reduce conflict on token IDENTIFIER:
-       65 return_: ε •
-        7 thing: • IDENTIFIER
-      First example: statement
-      Shift derivation
-        statement
-        ↳ 35: statement
-      Second example: IDENTIFIER
-      Reduce derivation
-        statement
-        ↳ 35: IDENTIFIER
-
 
 
 State 18
@@ -718,31 +701,9 @@ State 26
 
 State 27
 
-   35 statement: return_stmt • statement
+   35 statement: return_stmt •
 
-    IF          shift, and go to state 13
-    FOR         shift, and go to state 14
-    BREAK       shift, and go to state 15
-    CONTINUE    shift, and go to state 16
-    RETURN      shift, and go to state 17
-    VAR         shift, and go to state 18
-    PRINTLN     shift, and go to state 19
-    LBRACE      shift, and go to state 11
-    IDENTIFIER  shift, and go to state 20
-    COMMENT     shift, and go to state 21
-
-    $default  reduce using rule 43 (statement)
-
-    declaration   go to state 22
-    statement     go to state 73
-    simple_stmt   go to state 24
-    inc_dec_stmt  go to state 25
-    assignment    go to state 26
-    return_stmt   go to state 27
-    block_stmt    go to state 28
-    if_stmt       go to state 29
-    for_stmt      go to state 30
-    println_stmt  go to state 31
+    $default  reduce using rule 35 (statement)
 
 
 State 28
@@ -763,7 +724,7 @@ State 28
     $default  reduce using rule 43 (statement)
 
     declaration   go to state 22
-    statement     go to state 74
+    statement     go to state 73
     simple_stmt   go to state 24
     inc_dec_stmt  go to state 25
     assignment    go to state 26
@@ -792,7 +753,7 @@ State 29
     $default  reduce using rule 43 (statement)
 
     declaration   go to state 22
-    statement     go to state 75
+    statement     go to state 74
     simple_stmt   go to state 24
     inc_dec_stmt  go to state 25
     assignment    go to state 26
@@ -821,7 +782,7 @@ State 30
     $default  reduce using rule 43 (statement)
 
     declaration   go to state 22
-    statement     go to state 76
+    statement     go to state 75
     simple_stmt   go to state 24
     inc_dec_stmt  go to state 25
     assignment    go to state 26
@@ -850,7 +811,7 @@ State 31
     $default  reduce using rule 43 (statement)
 
     declaration   go to state 22
-    statement     go to state 77
+    statement     go to state 76
     simple_stmt   go to state 24
     inc_dec_stmt  go to state 25
     assignment    go to state 26
@@ -872,9 +833,9 @@ State 32
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    term        go to state 78
-    expression  go to state 79
-    binary_op   go to state 80
+    term        go to state 77
+    expression  go to state 78
+    binary_op   go to state 79
     literal     go to state 40
 
 
@@ -924,14 +885,14 @@ State 38
    73            | term • LESS_THAN term
    74            | term • GREATER_THAN term
 
-    EQUAL_EQUAL            shift, and go to state 81
-    NOT_EQUAL              shift, and go to state 82
-    LESS_THAN              shift, and go to state 83
-    LESS_THAN_OR_EQUAL     shift, and go to state 84
-    GREATER_THAN           shift, and go to state 85
-    GREATER_THAN_OR_EQUAL  shift, and go to state 86
-    LOGICAL_AND            shift, and go to state 87
-    LOGICAL_OR             shift, and go to state 88
+    EQUAL_EQUAL            shift, and go to state 80
+    NOT_EQUAL              shift, and go to state 81
+    LESS_THAN              shift, and go to state 82
+    LESS_THAN_OR_EQUAL     shift, and go to state 83
+    GREATER_THAN           shift, and go to state 84
+    GREATER_THAN_OR_EQUAL  shift, and go to state 85
+    LOGICAL_AND            shift, and go to state 86
+    LOGICAL_OR             shift, and go to state 87
 
 
 State 39
@@ -942,7 +903,7 @@ State 39
 
     LBRACE  shift, and go to state 11
 
-    block_stmt  go to state 89
+    block_stmt  go to state 88
 
 
 State 40
@@ -979,7 +940,7 @@ State 42
 
    79 for_clause: assignment • SEMICOLON boolean_exp SEMICOLON simple_stmt
 
-    SEMICOLON  shift, and go to state 90
+    SEMICOLON  shift, and go to state 89
 
 
 State 43
@@ -988,7 +949,7 @@ State 43
 
     LBRACE  shift, and go to state 11
 
-    block_stmt  go to state 91
+    block_stmt  go to state 90
 
 
 State 44
@@ -1039,12 +1000,12 @@ State 50
     4            | VAR IDENTIFIER • type ASSIGN expression
     5            | VAR IDENTIFIER • ASSIGN expression
 
-    ASSIGN       shift, and go to state 92
-    INT_TYPE     shift, and go to state 93
-    BOOL_TYPE    shift, and go to state 94
-    STRING_TYPE  shift, and go to state 95
+    ASSIGN       shift, and go to state 91
+    INT_TYPE     shift, and go to state 92
+    BOOL_TYPE    shift, and go to state 93
+    STRING_TYPE  shift, and go to state 94
 
-    type  go to state 96
+    type  go to state 95
 
 
 State 51
@@ -1052,8 +1013,8 @@ State 51
    80 println_stmt: PRINTLN LPAREN • IDENTIFIER RPAREN
    81             | PRINTLN LPAREN • STRING RPAREN
 
-    IDENTIFIER  shift, and go to state 97
-    STRING      shift, and go to state 98
+    IDENTIFIER  shift, and go to state 96
+    STRING      shift, and go to state 97
 
 
 State 52
@@ -1067,9 +1028,9 @@ State 52
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    term        go to state 78
-    expression  go to state 99
-    binary_op   go to state 80
+    term        go to state 77
+    expression  go to state 98
+    binary_op   go to state 79
     literal     go to state 40
 
 
@@ -1175,9 +1136,9 @@ State 66
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    term        go to state 78
-    expression  go to state 100
-    binary_op   go to state 80
+    term        go to state 77
+    expression  go to state 99
+    binary_op   go to state 79
     literal     go to state 40
 
 
@@ -1225,47 +1186,40 @@ State 72
 
 State 73
 
-   35 statement: return_stmt statement •
-
-    $default  reduce using rule 35 (statement)
-
-
-State 74
-
    38 statement: block_stmt statement •
 
     $default  reduce using rule 38 (statement)
 
 
-State 75
+State 74
 
    39 statement: if_stmt statement •
 
     $default  reduce using rule 39 (statement)
 
 
-State 76
+State 75
 
    40 statement: for_stmt statement •
 
     $default  reduce using rule 40 (statement)
 
 
-State 77
+State 76
 
    41 statement: println_stmt statement •
 
     $default  reduce using rule 41 (statement)
 
 
-State 78
+State 77
 
    12 expression: term •
 
     $default  reduce using rule 12 (expression)
 
 
-State 79
+State 78
 
    11 term: LPAREN expression • RPAREN
    14 binary_op: expression • LOGICAL_OR term
@@ -1288,38 +1242,53 @@ State 79
    31          | expression • BITWISE_AND term
    32          | expression • BIT_CLEAR term
 
-    PLUS                   shift, and go to state 101
-    MINUS                  shift, and go to state 102
-    TIMES                  shift, and go to state 103
-    DIVIDE                 shift, and go to state 104
-    MODULO                 shift, and go to state 105
-    BITWISE_AND            shift, and go to state 106
-    BITWISE_OR             shift, and go to state 107
-    BITWISE_XOR            shift, and go to state 108
-    BIT_CLEAR              shift, and go to state 109
-    LEFT_SHIFT             shift, and go to state 110
-    RIGHT_SHIFT            shift, and go to state 111
-    EQUAL_EQUAL            shift, and go to state 112
-    NOT_EQUAL              shift, and go to state 113
-    LESS_THAN              shift, and go to state 114
-    LESS_THAN_OR_EQUAL     shift, and go to state 115
-    GREATER_THAN           shift, and go to state 116
-    GREATER_THAN_OR_EQUAL  shift, and go to state 117
-    LOGICAL_AND            shift, and go to state 118
-    LOGICAL_OR             shift, and go to state 119
-    RPAREN                 shift, and go to state 120
+    PLUS                   shift, and go to state 100
+    MINUS                  shift, and go to state 101
+    TIMES                  shift, and go to state 102
+    DIVIDE                 shift, and go to state 103
+    MODULO                 shift, and go to state 104
+    BITWISE_AND            shift, and go to state 105
+    BITWISE_OR             shift, and go to state 106
+    BITWISE_XOR            shift, and go to state 107
+    BIT_CLEAR              shift, and go to state 108
+    LEFT_SHIFT             shift, and go to state 109
+    RIGHT_SHIFT            shift, and go to state 110
+    EQUAL_EQUAL            shift, and go to state 111
+    NOT_EQUAL              shift, and go to state 112
+    LESS_THAN              shift, and go to state 113
+    LESS_THAN_OR_EQUAL     shift, and go to state 114
+    GREATER_THAN           shift, and go to state 115
+    GREATER_THAN_OR_EQUAL  shift, and go to state 116
+    LOGICAL_AND            shift, and go to state 117
+    LOGICAL_OR             shift, and go to state 118
+    RPAREN                 shift, and go to state 119
 
 
-State 80
+State 79
 
    13 expression: binary_op •
 
     $default  reduce using rule 13 (expression)
 
 
-State 81
+State 80
 
    69 boolean_exp: term EQUAL_EQUAL • term
+
+    LPAREN      shift, and go to state 32
+    BOOLEAN     shift, and go to state 33
+    IDENTIFIER  shift, and go to state 34
+    INTEGER     shift, and go to state 35
+    STRING      shift, and go to state 36
+    FLOAT       shift, and go to state 37
+
+    term     go to state 120
+    literal  go to state 40
+
+
+State 81
+
+   70 boolean_exp: term NOT_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1334,7 +1303,7 @@ State 81
 
 State 82
 
-   70 boolean_exp: term NOT_EQUAL • term
+   73 boolean_exp: term LESS_THAN • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1349,7 +1318,7 @@ State 82
 
 State 83
 
-   73 boolean_exp: term LESS_THAN • term
+   71 boolean_exp: term LESS_THAN_OR_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1364,7 +1333,7 @@ State 83
 
 State 84
 
-   71 boolean_exp: term LESS_THAN_OR_EQUAL • term
+   74 boolean_exp: term GREATER_THAN • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1379,7 +1348,7 @@ State 84
 
 State 85
 
-   74 boolean_exp: term GREATER_THAN • term
+   72 boolean_exp: term GREATER_THAN_OR_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1394,7 +1363,7 @@ State 85
 
 State 86
 
-   72 boolean_exp: term GREATER_THAN_OR_EQUAL • term
+   68 boolean_exp: term LOGICAL_AND • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1409,7 +1378,7 @@ State 86
 
 State 87
 
-   68 boolean_exp: term LOGICAL_AND • term
+   67 boolean_exp: term LOGICAL_OR • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1424,31 +1393,16 @@ State 87
 
 State 88
 
-   67 boolean_exp: term LOGICAL_OR • term
-
-    LPAREN      shift, and go to state 32
-    BOOLEAN     shift, and go to state 33
-    IDENTIFIER  shift, and go to state 34
-    INTEGER     shift, and go to state 35
-    STRING      shift, and go to state 36
-    FLOAT       shift, and go to state 37
-
-    term     go to state 128
-    literal  go to state 40
-
-
-State 89
-
    75 if_stmt: IF boolean_exp block_stmt •
    76        | IF boolean_exp block_stmt • ELSE if_stmt
    77        | IF boolean_exp block_stmt • ELSE block_stmt
 
-    ELSE  shift, and go to state 129
+    ELSE  shift, and go to state 128
 
     $default  reduce using rule 75 (if_stmt)
 
 
-State 90
+State 89
 
    79 for_clause: assignment SEMICOLON • boolean_exp SEMICOLON simple_stmt
 
@@ -1460,18 +1414,18 @@ State 90
     FLOAT       shift, and go to state 37
 
     term         go to state 38
-    boolean_exp  go to state 130
+    boolean_exp  go to state 129
     literal      go to state 40
 
 
-State 91
+State 90
 
    78 for_stmt: FOR for_clause block_stmt •
 
     $default  reduce using rule 78 (for_stmt)
 
 
-State 92
+State 91
 
     5 declaration: VAR IDENTIFIER ASSIGN • expression
 
@@ -1482,55 +1436,101 @@ State 92
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    term        go to state 78
-    expression  go to state 131
-    binary_op   go to state 80
+    term        go to state 77
+    expression  go to state 130
+    binary_op   go to state 79
     literal     go to state 40
 
 
-State 93
+State 92
 
    82 type: INT_TYPE •
 
     $default  reduce using rule 82 (type)
 
 
-State 94
+State 93
 
    84 type: BOOL_TYPE •
 
     $default  reduce using rule 84 (type)
 
 
-State 95
+State 94
 
    83 type: STRING_TYPE •
 
     $default  reduce using rule 83 (type)
 
 
-State 96
+State 95
 
     3 declaration: VAR IDENTIFIER type •
     4            | VAR IDENTIFIER type • ASSIGN expression
 
-    ASSIGN  shift, and go to state 132
+    ASSIGN  shift, and go to state 131
 
     $default  reduce using rule 3 (declaration)
 
 
-State 97
+State 96
 
    80 println_stmt: PRINTLN LPAREN IDENTIFIER • RPAREN
+
+    RPAREN  shift, and go to state 132
+
+
+State 97
+
+   81 println_stmt: PRINTLN LPAREN STRING • RPAREN
 
     RPAREN  shift, and go to state 133
 
 
 State 98
 
-   81 println_stmt: PRINTLN LPAREN STRING • RPAREN
+   14 binary_op: expression • LOGICAL_OR term
+   15          | expression • LOGICAL_AND term
+   16          | expression • EQUAL_EQUAL term
+   17          | expression • NOT_EQUAL term
+   18          | expression • LESS_THAN_OR_EQUAL term
+   19          | expression • GREATER_THAN_OR_EQUAL term
+   20          | expression • LESS_THAN term
+   21          | expression • GREATER_THAN term
+   22          | expression • PLUS term
+   23          | expression • MINUS term
+   24          | expression • BITWISE_OR term
+   25          | expression • BITWISE_XOR term
+   26          | expression • TIMES term
+   27          | expression • DIVIDE term
+   28          | expression • MODULO term
+   29          | expression • RIGHT_SHIFT term
+   30          | expression • LEFT_SHIFT term
+   31          | expression • BITWISE_AND term
+   32          | expression • BIT_CLEAR term
+   48 assignment: IDENTIFIER ASSIGN expression •
 
-    RPAREN  shift, and go to state 134
+    PLUS                   shift, and go to state 100
+    MINUS                  shift, and go to state 101
+    TIMES                  shift, and go to state 102
+    DIVIDE                 shift, and go to state 103
+    MODULO                 shift, and go to state 104
+    BITWISE_AND            shift, and go to state 105
+    BITWISE_OR             shift, and go to state 106
+    BITWISE_XOR            shift, and go to state 107
+    BIT_CLEAR              shift, and go to state 108
+    LEFT_SHIFT             shift, and go to state 109
+    RIGHT_SHIFT            shift, and go to state 110
+    EQUAL_EQUAL            shift, and go to state 111
+    NOT_EQUAL              shift, and go to state 112
+    LESS_THAN              shift, and go to state 113
+    LESS_THAN_OR_EQUAL     shift, and go to state 114
+    GREATER_THAN           shift, and go to state 115
+    GREATER_THAN_OR_EQUAL  shift, and go to state 116
+    LOGICAL_AND            shift, and go to state 117
+    LOGICAL_OR             shift, and go to state 118
+
+    $default  reduce using rule 48 (assignment)
 
 
 State 99
@@ -1554,80 +1554,49 @@ State 99
    30          | expression • LEFT_SHIFT term
    31          | expression • BITWISE_AND term
    32          | expression • BIT_CLEAR term
-   48 assignment: IDENTIFIER ASSIGN expression •
-
-    PLUS                   shift, and go to state 101
-    MINUS                  shift, and go to state 102
-    TIMES                  shift, and go to state 103
-    DIVIDE                 shift, and go to state 104
-    MODULO                 shift, and go to state 105
-    BITWISE_AND            shift, and go to state 106
-    BITWISE_OR             shift, and go to state 107
-    BITWISE_XOR            shift, and go to state 108
-    BIT_CLEAR              shift, and go to state 109
-    LEFT_SHIFT             shift, and go to state 110
-    RIGHT_SHIFT            shift, and go to state 111
-    EQUAL_EQUAL            shift, and go to state 112
-    NOT_EQUAL              shift, and go to state 113
-    LESS_THAN              shift, and go to state 114
-    LESS_THAN_OR_EQUAL     shift, and go to state 115
-    GREATER_THAN           shift, and go to state 116
-    GREATER_THAN_OR_EQUAL  shift, and go to state 117
-    LOGICAL_AND            shift, and go to state 118
-    LOGICAL_OR             shift, and go to state 119
-
-    $default  reduce using rule 48 (assignment)
-
-
-State 100
-
-   14 binary_op: expression • LOGICAL_OR term
-   15          | expression • LOGICAL_AND term
-   16          | expression • EQUAL_EQUAL term
-   17          | expression • NOT_EQUAL term
-   18          | expression • LESS_THAN_OR_EQUAL term
-   19          | expression • GREATER_THAN_OR_EQUAL term
-   20          | expression • LESS_THAN term
-   21          | expression • GREATER_THAN term
-   22          | expression • PLUS term
-   23          | expression • MINUS term
-   24          | expression • BITWISE_OR term
-   25          | expression • BITWISE_XOR term
-   26          | expression • TIMES term
-   27          | expression • DIVIDE term
-   28          | expression • MODULO term
-   29          | expression • RIGHT_SHIFT term
-   30          | expression • LEFT_SHIFT term
-   31          | expression • BITWISE_AND term
-   32          | expression • BIT_CLEAR term
    49 assignment: IDENTIFIER assign_op expression •
 
-    PLUS                   shift, and go to state 101
-    MINUS                  shift, and go to state 102
-    TIMES                  shift, and go to state 103
-    DIVIDE                 shift, and go to state 104
-    MODULO                 shift, and go to state 105
-    BITWISE_AND            shift, and go to state 106
-    BITWISE_OR             shift, and go to state 107
-    BITWISE_XOR            shift, and go to state 108
-    BIT_CLEAR              shift, and go to state 109
-    LEFT_SHIFT             shift, and go to state 110
-    RIGHT_SHIFT            shift, and go to state 111
-    EQUAL_EQUAL            shift, and go to state 112
-    NOT_EQUAL              shift, and go to state 113
-    LESS_THAN              shift, and go to state 114
-    LESS_THAN_OR_EQUAL     shift, and go to state 115
-    GREATER_THAN           shift, and go to state 116
-    GREATER_THAN_OR_EQUAL  shift, and go to state 117
-    LOGICAL_AND            shift, and go to state 118
-    LOGICAL_OR             shift, and go to state 119
+    PLUS                   shift, and go to state 100
+    MINUS                  shift, and go to state 101
+    TIMES                  shift, and go to state 102
+    DIVIDE                 shift, and go to state 103
+    MODULO                 shift, and go to state 104
+    BITWISE_AND            shift, and go to state 105
+    BITWISE_OR             shift, and go to state 106
+    BITWISE_XOR            shift, and go to state 107
+    BIT_CLEAR              shift, and go to state 108
+    LEFT_SHIFT             shift, and go to state 109
+    RIGHT_SHIFT            shift, and go to state 110
+    EQUAL_EQUAL            shift, and go to state 111
+    NOT_EQUAL              shift, and go to state 112
+    LESS_THAN              shift, and go to state 113
+    LESS_THAN_OR_EQUAL     shift, and go to state 114
+    GREATER_THAN           shift, and go to state 115
+    GREATER_THAN_OR_EQUAL  shift, and go to state 116
+    LOGICAL_AND            shift, and go to state 117
+    LOGICAL_OR             shift, and go to state 118
 
     $default  reduce using rule 49 (assignment)
 
 
-State 101
+State 100
 
    22 binary_op: expression PLUS • term
+
+    LPAREN      shift, and go to state 32
+    BOOLEAN     shift, and go to state 33
+    IDENTIFIER  shift, and go to state 34
+    INTEGER     shift, and go to state 35
+    STRING      shift, and go to state 36
+    FLOAT       shift, and go to state 37
+
+    term     go to state 134
+    literal  go to state 40
+
+
+State 101
+
+   23 binary_op: expression MINUS • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1642,7 +1611,7 @@ State 101
 
 State 102
 
-   23 binary_op: expression MINUS • term
+   26 binary_op: expression TIMES • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1657,7 +1626,7 @@ State 102
 
 State 103
 
-   26 binary_op: expression TIMES • term
+   27 binary_op: expression DIVIDE • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1672,7 +1641,7 @@ State 103
 
 State 104
 
-   27 binary_op: expression DIVIDE • term
+   28 binary_op: expression MODULO • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1687,7 +1656,7 @@ State 104
 
 State 105
 
-   28 binary_op: expression MODULO • term
+   31 binary_op: expression BITWISE_AND • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1702,7 +1671,7 @@ State 105
 
 State 106
 
-   31 binary_op: expression BITWISE_AND • term
+   24 binary_op: expression BITWISE_OR • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1717,7 +1686,7 @@ State 106
 
 State 107
 
-   24 binary_op: expression BITWISE_OR • term
+   25 binary_op: expression BITWISE_XOR • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1732,7 +1701,7 @@ State 107
 
 State 108
 
-   25 binary_op: expression BITWISE_XOR • term
+   32 binary_op: expression BIT_CLEAR • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1747,7 +1716,7 @@ State 108
 
 State 109
 
-   32 binary_op: expression BIT_CLEAR • term
+   30 binary_op: expression LEFT_SHIFT • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1762,7 +1731,7 @@ State 109
 
 State 110
 
-   30 binary_op: expression LEFT_SHIFT • term
+   29 binary_op: expression RIGHT_SHIFT • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1777,7 +1746,7 @@ State 110
 
 State 111
 
-   29 binary_op: expression RIGHT_SHIFT • term
+   16 binary_op: expression EQUAL_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1792,7 +1761,7 @@ State 111
 
 State 112
 
-   16 binary_op: expression EQUAL_EQUAL • term
+   17 binary_op: expression NOT_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1807,7 +1776,7 @@ State 112
 
 State 113
 
-   17 binary_op: expression NOT_EQUAL • term
+   20 binary_op: expression LESS_THAN • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1822,7 +1791,7 @@ State 113
 
 State 114
 
-   20 binary_op: expression LESS_THAN • term
+   18 binary_op: expression LESS_THAN_OR_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1837,7 +1806,7 @@ State 114
 
 State 115
 
-   18 binary_op: expression LESS_THAN_OR_EQUAL • term
+   21 binary_op: expression GREATER_THAN • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1852,7 +1821,7 @@ State 115
 
 State 116
 
-   21 binary_op: expression GREATER_THAN • term
+   19 binary_op: expression GREATER_THAN_OR_EQUAL • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1867,7 +1836,7 @@ State 116
 
 State 117
 
-   19 binary_op: expression GREATER_THAN_OR_EQUAL • term
+   15 binary_op: expression LOGICAL_AND • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1882,7 +1851,7 @@ State 117
 
 State 118
 
-   15 binary_op: expression LOGICAL_AND • term
+   14 binary_op: expression LOGICAL_OR • term
 
     LPAREN      shift, and go to state 32
     BOOLEAN     shift, and go to state 33
@@ -1897,83 +1866,68 @@ State 118
 
 State 119
 
-   14 binary_op: expression LOGICAL_OR • term
-
-    LPAREN      shift, and go to state 32
-    BOOLEAN     shift, and go to state 33
-    IDENTIFIER  shift, and go to state 34
-    INTEGER     shift, and go to state 35
-    STRING      shift, and go to state 36
-    FLOAT       shift, and go to state 37
-
-    term     go to state 153
-    literal  go to state 40
-
-
-State 120
-
    11 term: LPAREN expression RPAREN •
 
     $default  reduce using rule 11 (term)
 
 
-State 121
+State 120
 
    69 boolean_exp: term EQUAL_EQUAL term •
 
     $default  reduce using rule 69 (boolean_exp)
 
 
-State 122
+State 121
 
    70 boolean_exp: term NOT_EQUAL term •
 
     $default  reduce using rule 70 (boolean_exp)
 
 
-State 123
+State 122
 
    73 boolean_exp: term LESS_THAN term •
 
     $default  reduce using rule 73 (boolean_exp)
 
 
-State 124
+State 123
 
    71 boolean_exp: term LESS_THAN_OR_EQUAL term •
 
     $default  reduce using rule 71 (boolean_exp)
 
 
-State 125
+State 124
 
    74 boolean_exp: term GREATER_THAN term •
 
     $default  reduce using rule 74 (boolean_exp)
 
 
-State 126
+State 125
 
    72 boolean_exp: term GREATER_THAN_OR_EQUAL term •
 
     $default  reduce using rule 72 (boolean_exp)
 
 
-State 127
+State 126
 
    68 boolean_exp: term LOGICAL_AND term •
 
     $default  reduce using rule 68 (boolean_exp)
 
 
-State 128
+State 127
 
    67 boolean_exp: term LOGICAL_OR term •
 
     $default  reduce using rule 67 (boolean_exp)
 
 
-State 129
+State 128
 
    76 if_stmt: IF boolean_exp block_stmt ELSE • if_stmt
    77        | IF boolean_exp block_stmt ELSE • block_stmt
@@ -1981,18 +1935,18 @@ State 129
     IF      shift, and go to state 13
     LBRACE  shift, and go to state 11
 
-    block_stmt  go to state 154
-    if_stmt     go to state 155
+    block_stmt  go to state 153
+    if_stmt     go to state 154
 
 
-State 130
+State 129
 
    79 for_clause: assignment SEMICOLON boolean_exp • SEMICOLON simple_stmt
 
-    SEMICOLON  shift, and go to state 156
+    SEMICOLON  shift, and go to state 155
 
 
-State 131
+State 130
 
     5 declaration: VAR IDENTIFIER ASSIGN expression •
    14 binary_op: expression • LOGICAL_OR term
@@ -2015,30 +1969,30 @@ State 131
    31          | expression • BITWISE_AND term
    32          | expression • BIT_CLEAR term
 
-    PLUS                   shift, and go to state 101
-    MINUS                  shift, and go to state 102
-    TIMES                  shift, and go to state 103
-    DIVIDE                 shift, and go to state 104
-    MODULO                 shift, and go to state 105
-    BITWISE_AND            shift, and go to state 106
-    BITWISE_OR             shift, and go to state 107
-    BITWISE_XOR            shift, and go to state 108
-    BIT_CLEAR              shift, and go to state 109
-    LEFT_SHIFT             shift, and go to state 110
-    RIGHT_SHIFT            shift, and go to state 111
-    EQUAL_EQUAL            shift, and go to state 112
-    NOT_EQUAL              shift, and go to state 113
-    LESS_THAN              shift, and go to state 114
-    LESS_THAN_OR_EQUAL     shift, and go to state 115
-    GREATER_THAN           shift, and go to state 116
-    GREATER_THAN_OR_EQUAL  shift, and go to state 117
-    LOGICAL_AND            shift, and go to state 118
-    LOGICAL_OR             shift, and go to state 119
+    PLUS                   shift, and go to state 100
+    MINUS                  shift, and go to state 101
+    TIMES                  shift, and go to state 102
+    DIVIDE                 shift, and go to state 103
+    MODULO                 shift, and go to state 104
+    BITWISE_AND            shift, and go to state 105
+    BITWISE_OR             shift, and go to state 106
+    BITWISE_XOR            shift, and go to state 107
+    BIT_CLEAR              shift, and go to state 108
+    LEFT_SHIFT             shift, and go to state 109
+    RIGHT_SHIFT            shift, and go to state 110
+    EQUAL_EQUAL            shift, and go to state 111
+    NOT_EQUAL              shift, and go to state 112
+    LESS_THAN              shift, and go to state 113
+    LESS_THAN_OR_EQUAL     shift, and go to state 114
+    GREATER_THAN           shift, and go to state 115
+    GREATER_THAN_OR_EQUAL  shift, and go to state 116
+    LOGICAL_AND            shift, and go to state 117
+    LOGICAL_OR             shift, and go to state 118
 
     $default  reduce using rule 5 (declaration)
 
 
-State 132
+State 131
 
     4 declaration: VAR IDENTIFIER type ASSIGN • expression
 
@@ -2049,185 +2003,185 @@ State 132
     STRING      shift, and go to state 36
     FLOAT       shift, and go to state 37
 
-    term        go to state 78
-    expression  go to state 157
-    binary_op   go to state 80
+    term        go to state 77
+    expression  go to state 156
+    binary_op   go to state 79
     literal     go to state 40
 
 
-State 133
+State 132
 
    80 println_stmt: PRINTLN LPAREN IDENTIFIER RPAREN •
 
     $default  reduce using rule 80 (println_stmt)
 
 
-State 134
+State 133
 
    81 println_stmt: PRINTLN LPAREN STRING RPAREN •
 
     $default  reduce using rule 81 (println_stmt)
 
 
-State 135
+State 134
 
    22 binary_op: expression PLUS term •
 
     $default  reduce using rule 22 (binary_op)
 
 
-State 136
+State 135
 
    23 binary_op: expression MINUS term •
 
     $default  reduce using rule 23 (binary_op)
 
 
-State 137
+State 136
 
    26 binary_op: expression TIMES term •
 
     $default  reduce using rule 26 (binary_op)
 
 
-State 138
+State 137
 
    27 binary_op: expression DIVIDE term •
 
     $default  reduce using rule 27 (binary_op)
 
 
-State 139
+State 138
 
    28 binary_op: expression MODULO term •
 
     $default  reduce using rule 28 (binary_op)
 
 
-State 140
+State 139
 
    31 binary_op: expression BITWISE_AND term •
 
     $default  reduce using rule 31 (binary_op)
 
 
-State 141
+State 140
 
    24 binary_op: expression BITWISE_OR term •
 
     $default  reduce using rule 24 (binary_op)
 
 
-State 142
+State 141
 
    25 binary_op: expression BITWISE_XOR term •
 
     $default  reduce using rule 25 (binary_op)
 
 
-State 143
+State 142
 
    32 binary_op: expression BIT_CLEAR term •
 
     $default  reduce using rule 32 (binary_op)
 
 
-State 144
+State 143
 
    30 binary_op: expression LEFT_SHIFT term •
 
     $default  reduce using rule 30 (binary_op)
 
 
-State 145
+State 144
 
    29 binary_op: expression RIGHT_SHIFT term •
 
     $default  reduce using rule 29 (binary_op)
 
 
-State 146
+State 145
 
    16 binary_op: expression EQUAL_EQUAL term •
 
     $default  reduce using rule 16 (binary_op)
 
 
-State 147
+State 146
 
    17 binary_op: expression NOT_EQUAL term •
 
     $default  reduce using rule 17 (binary_op)
 
 
-State 148
+State 147
 
    20 binary_op: expression LESS_THAN term •
 
     $default  reduce using rule 20 (binary_op)
 
 
-State 149
+State 148
 
    18 binary_op: expression LESS_THAN_OR_EQUAL term •
 
     $default  reduce using rule 18 (binary_op)
 
 
-State 150
+State 149
 
    21 binary_op: expression GREATER_THAN term •
 
     $default  reduce using rule 21 (binary_op)
 
 
-State 151
+State 150
 
    19 binary_op: expression GREATER_THAN_OR_EQUAL term •
 
     $default  reduce using rule 19 (binary_op)
 
 
-State 152
+State 151
 
    15 binary_op: expression LOGICAL_AND term •
 
     $default  reduce using rule 15 (binary_op)
 
 
-State 153
+State 152
 
    14 binary_op: expression LOGICAL_OR term •
 
     $default  reduce using rule 14 (binary_op)
 
 
-State 154
+State 153
 
    77 if_stmt: IF boolean_exp block_stmt ELSE block_stmt •
 
     $default  reduce using rule 77 (if_stmt)
 
 
-State 155
+State 154
 
    76 if_stmt: IF boolean_exp block_stmt ELSE if_stmt •
 
     $default  reduce using rule 76 (if_stmt)
 
 
-State 156
+State 155
 
    79 for_clause: assignment SEMICOLON boolean_exp SEMICOLON • simple_stmt
 
     IDENTIFIER  shift, and go to state 20
 
-    simple_stmt   go to state 158
+    simple_stmt   go to state 157
     inc_dec_stmt  go to state 25
     assignment    go to state 26
 
 
-State 157
+State 156
 
     4 declaration: VAR IDENTIFIER type ASSIGN expression •
    14 binary_op: expression • LOGICAL_OR term
@@ -2250,30 +2204,30 @@ State 157
    31          | expression • BITWISE_AND term
    32          | expression • BIT_CLEAR term
 
-    PLUS                   shift, and go to state 101
-    MINUS                  shift, and go to state 102
-    TIMES                  shift, and go to state 103
-    DIVIDE                 shift, and go to state 104
-    MODULO                 shift, and go to state 105
-    BITWISE_AND            shift, and go to state 106
-    BITWISE_OR             shift, and go to state 107
-    BITWISE_XOR            shift, and go to state 108
-    BIT_CLEAR              shift, and go to state 109
-    LEFT_SHIFT             shift, and go to state 110
-    RIGHT_SHIFT            shift, and go to state 111
-    EQUAL_EQUAL            shift, and go to state 112
-    NOT_EQUAL              shift, and go to state 113
-    LESS_THAN              shift, and go to state 114
-    LESS_THAN_OR_EQUAL     shift, and go to state 115
-    GREATER_THAN           shift, and go to state 116
-    GREATER_THAN_OR_EQUAL  shift, and go to state 117
-    LOGICAL_AND            shift, and go to state 118
-    LOGICAL_OR             shift, and go to state 119
+    PLUS                   shift, and go to state 100
+    MINUS                  shift, and go to state 101
+    TIMES                  shift, and go to state 102
+    DIVIDE                 shift, and go to state 103
+    MODULO                 shift, and go to state 104
+    BITWISE_AND            shift, and go to state 105
+    BITWISE_OR             shift, and go to state 106
+    BITWISE_XOR            shift, and go to state 107
+    BIT_CLEAR              shift, and go to state 108
+    LEFT_SHIFT             shift, and go to state 109
+    RIGHT_SHIFT            shift, and go to state 110
+    EQUAL_EQUAL            shift, and go to state 111
+    NOT_EQUAL              shift, and go to state 112
+    LESS_THAN              shift, and go to state 113
+    LESS_THAN_OR_EQUAL     shift, and go to state 114
+    GREATER_THAN           shift, and go to state 115
+    GREATER_THAN_OR_EQUAL  shift, and go to state 116
+    LOGICAL_AND            shift, and go to state 117
+    LOGICAL_OR             shift, and go to state 118
 
     $default  reduce using rule 4 (declaration)
 
 
-State 158
+State 157
 
    79 for_clause: assignment SEMICOLON boolean_exp SEMICOLON simple_stmt •
 

@@ -195,7 +195,7 @@ binary_op : expression LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); 
 
 statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}   
           | simple_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
-          | return_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
+          | return_stmt { $$.nd = mknode($1.nd, NULL, "statement") ;}  
           | BREAK statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  				
           | CONTINUE statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | block_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
