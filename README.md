@@ -12,6 +12,6 @@ This Repo is our implementaion of a Compiler for GoLang using **Lex** and **Yacc
     ```
 3. To Run your compiler, use:
     ```
-    ./compiler < input_file
+    ./parser < input_file
     ```
 
