@@ -36,7 +36,7 @@
 
 %type <nd_obj> program PackageClause declaration function_declaration expression type literal
 %type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing
+%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing return_
 
 %define parse.error verbose
 %%
@@ -253,12 +253,12 @@ mul_op_eq : MUL_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
 // short_variable_declaration : expression SHORT_VAR expression
 //                            ;
 
-return_stmt : RETURN { $$.nd = mknode(NULL, NULL, "RETURN"); }
-            | RETURN thing { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $2.nd, "RETURN"); }
+return_stmt : RETURN return_ { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $2.nd, "RETURN"); }
             ;
+return_ : thing { $$.nd = $1.nd; }
+        | { $$.nd = NULL ;}
 
-block_stmt : LBRACE RBRACE
-           | LBRACE statement RBRACE { $$.nd = $2.nd; }
+block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
 // statement_list : statement 
