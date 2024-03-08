@@ -36,7 +36,8 @@
 
 %type <nd_obj> program PackageClause declaration function_declaration expression type literal
 %type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing return_
+%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing return_ switch_stmt switch_cases switch_case expression_list
+%type <nd_obj> statement_list
 
 %define parse.error verbose
 %%
@@ -200,7 +201,7 @@ statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}
           | CONTINUE statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | block_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | if_stmt	statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
-        //   | switch_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
+          | switch_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
           | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  						
           | println_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
           | COMMENT statement { $$.nd = mknode(NULL, $2.nd, "COMMENT") ;}  
@@ -282,6 +283,26 @@ if_stmt : IF boolean_exp block_stmt  { $$.nd = mknode($2.nd, $3.nd, "IF"); }
         | IF boolean_exp block_stmt ELSE if_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART"); $$.nd = mknode(cond_if, $5.nd, "IF-ELSE-IF"); }
         | IF boolean_exp block_stmt ELSE block_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART");  $$.nd = mknode(cond_if, $5.nd, "IF-ELSE"); }
         ;
+
+
+switch_stmt : SWITCH simple_stmt '{' switch_cases '}' { $$.nd = mknode($2.nd, $4.nd, "SWITCH"); }
+            ;
+
+switch_cases : switch_case
+            | switch_cases switch_case { $$.nd = mknode($1.nd, $2.nd, "SWITCH-CASES"); }
+            ;
+
+switch_case : CASE expression_list ':' statement_list { $$.nd = mknode($2.nd, $4.nd, "CASE"); }
+           | DEFAULT ':' statement_list { $$.nd = mknode(NULL, $3.nd, "DEFAULT"); }
+           ;
+
+expression_list : expression
+               | expression_list ',' expression { $$.nd = mknode($1.nd, $3.nd, "EXPR-LIST"); }
+               ;
+
+statement_list : statement
+              | statement_list statement { $$.nd = mknode($1.nd, $2.nd, "STMT-LIST"); }
+              ;
 
 
 for_stmt : FOR for_clause block_stmt  { $$.nd = mknode($2.nd, $3.nd, "FOR"); }
