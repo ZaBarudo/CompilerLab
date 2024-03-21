@@ -81,11 +81,11 @@ PackageClause: PACKAGE IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $2.nd = 
 // | declaration declaration_list 
 // ;
 
-declaration : VAR IDENTIFIER type { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $3.nd, "variable");}                             
-// | identifier_list LPAREN IDENTIFIER  RPAREN                           
-// | identifier_list bracket_list IDENTIFIER                      
+declaration : VAR IDENTIFIER type { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $3.nd, "variable");}                                                
 | VAR IDENTIFIER type ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name);  struct node* variable = mknode($2.nd, $3.nd, "variable");$$.nd = mknode(variable, $5.nd, "="); }  
 | VAR IDENTIFIER ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $4.nd, "="); }  
+// | identifier_list LPAREN IDENTIFIER  RPAREN                           
+// | identifier_list bracket_list IDENTIFIER   
 // | IDENTIFIER type
 // | IDENTIFIER STRING_TYPE ASSIGN expression_list
 // | IDENTIFIER STRING_TYPE        
@@ -199,8 +199,7 @@ statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}
           | BREAK statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  				
           | CONTINUE statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | block_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
-          | if_stmt	statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
-        //   | switch_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
+          | if_stmt	statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
           | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  						
           | println_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  
           | COMMENT statement { $$.nd = mknode(NULL, $2.nd, "COMMENT") ;}  
@@ -211,11 +210,8 @@ statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}
                 //  | type_declarations
                  ;
 
-simple_stmt :
-            // | expression_stmt
-              inc_dec_stmt { $$.nd = $1.nd; }
+simple_stmt :inc_dec_stmt { $$.nd = $1.nd; }
             | assignment { $$.nd = $1.nd; }
-            // | short_variable_declaration
             ;
 
 // expression_stmt : expression	/* weed to make sure its a function call */ { $$ = new_Expr_Simple_Statement($1, @1.first_line); }	
@@ -276,9 +272,6 @@ boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }
         ;       
 
 if_stmt : IF boolean_exp block_stmt  { $$.nd = mknode($2.nd, $3.nd, "IF"); }
-        // | IF simple_stmt term block_stmt
-	    // | IF simple_stmt expression block_stmt ELSE if_stmt
-	    // | IF simple_stmt expression block_stmt ELSE block_stmt
         | IF boolean_exp block_stmt ELSE if_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART"); $$.nd = mknode(cond_if, $5.nd, "IF-ELSE-IF"); }
         | IF boolean_exp block_stmt ELSE block_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART");  $$.nd = mknode(cond_if, $5.nd, "IF-ELSE"); }
         ;
@@ -305,12 +298,9 @@ if_stmt : IF boolean_exp block_stmt  { $$.nd = mknode($2.nd, $3.nd, "IF"); }
 
 
 for_stmt : FOR for_clause block_stmt  { $$.nd = mknode($2.nd, $3.nd, "FOR"); }
-        //  | FOR expression block_stmt
-        //  | FOR block_stmt
-         ;
+            ;
 
 for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
-        //    | simple_stmt SEMICOLON simple_stmt
            ;
 
 println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }

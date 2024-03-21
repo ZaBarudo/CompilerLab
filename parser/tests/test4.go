@@ -23,10 +23,4 @@ func main() {
         
     }
 
-    
-    j = 0
-    // for j < 5 {
-    //     println("Iteration (while loop):", j)
-    //     j++
-    // }
 }
