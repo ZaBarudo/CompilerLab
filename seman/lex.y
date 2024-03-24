@@ -5,7 +5,9 @@
     #include<ctype.h>
     #include"lex.yy.c"
     #define YYDEBUG 1
-
+    struct node* cond_if;
+    struct node* idnode;
+    //char idname[100];
     int yyerror(const char *s);
     int yylex();
     int yywrap();
@@ -13,7 +15,7 @@
     void add(char);
     void insert_type();
     int search(char *);
-
+    void insert_type();
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
     void printBT(struct node*);
@@ -57,9 +59,9 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
 
-%type <nd_obj> program PackageClause declaration function_declaration expression type literal
+%type <nd_obj> program PackageClause declaration declaration1 function_declaration expression type literal
 %type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt for_stmt for_clause println_stmt term thing return_ 
+%type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt term thing return_ 
 
 %define parse.error verbose
 %%
@@ -71,11 +73,12 @@ program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "prog
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "package"); }
 ;
 
+declaration : VAR { add('K'); } IDENTIFIER { add('V'); } declaration1 { $3.nd = mknode(NULL, NULL, $3.name);  idnode = $3.nd; }
+            ;
 
-
-declaration : VAR { add('K'); } IDENTIFIER { add('V'); } type { $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($3.nd, $5.nd, "variable"); }                                                
-| VAR { add('K'); } IDENTIFIER  { add('V'); } type ASSIGN expression { $3.nd = mknode(NULL, NULL, $3.name);  struct node* variable = mknode($3.nd, $5.nd, "variable");$$.nd = mknode(variable, $7.nd, "="); }  
-| VAR { add('K'); } IDENTIFIER { add('V'); } ASSIGN expression { $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($3.nd, $6.nd, "="); }  
+declaration1 : type { $$.nd = mknode(idnode, $1.nd, "variable"); }                                                
+| type ASSIGN expression { idnode = mknode(NULL, NULL, "identifier");  struct node* variable = mknode(idnode, $1.nd, "variable");$$.nd = mknode(variable, idnode, "="); }  
+| ASSIGN expression { idnode = mknode(NULL, NULL, "identifier"); $$.nd = mknode(idnode, $2.nd, "="); }  
 ;
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
@@ -189,10 +192,11 @@ boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }
          | term LESS_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
          | term GREATER_THAN term  { $$.nd = mknode($1.nd, $3.nd, $2.name); }
         ;       
-
-if_stmt : IF { add('K'); } boolean_exp block_stmt  { $$.nd = mknode($3.nd, $4.nd, "IF"); }
-        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } if_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART"); $$.nd = mknode(cond_if, $7.nd, "IF-ELSE-IF"); }
-        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } block_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART");  $$.nd = mknode(cond_if, $7.nd, "IF-ELSE"); }
+if_stmt: IF { add('K'); } boolean_exp block_stmt if_stmt1  { cond_if = mknode($3.nd,$4.nd,"IF-PART"); }
+        ;
+if_stmt1 : { $$.nd = cond_if; }
+        | ELSE { add('K'); } if_stmt  { $$.nd = mknode(cond_if, $3.nd, "IF-ELSE-IF"); }
+        | ELSE { add('K'); } block_stmt  { $$.nd = mknode(cond_if, $3.nd, "IF-ELSE"); }
         ;
 
 
@@ -222,6 +226,18 @@ int main() {
     extern FILE *yyin, *yyout;
    
     yyparse();
+    printf("\n\n \t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
+	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
+	printf("_______________________________________\n\n");
+	int i=0;
+	for(i=0; i<count; i++) {
+		printf("%s\t%s\t%s\t%d\t\n", symbol_table[i].id_name, symbol_table[i].data_type, symbol_table[i].type, symbol_table[i].line_no);
+	}
+	for(i=0;i<count;i++){
+		free(symbol_table[i].id_name);
+		free(symbol_table[i].type);
+	}
+	printf("\n\n");
     if(success)
         printf("Parsing Successful\n");
     printf("\n\n");

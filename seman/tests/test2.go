@@ -6,6 +6,6 @@ func main() {
     if a < b {
         println("a is less than b")
     } else {
-        println("a is greater than or equal to b)
+        println("a is greater than or equal to b")
     }
 }
