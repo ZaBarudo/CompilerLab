@@ -3,10 +3,17 @@
     #include<string.h>
     #include<stdlib.h>
     #include<ctype.h>
+    #include"lex.yy.c"
     #define YYDEBUG 1
+
     int yyerror(const char *s);
-    int yylex(void);
+    int yylex();
     int yywrap();
+
+    void add(char);
+    void insert_type();
+    int search(char *);
+
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
     void printBT(struct node*);
@@ -17,14 +24,18 @@
         char * type;
         int line_no;
     } symbol_table[40];
-
-    // int success = 1;
+    int count=0;
+    int q;
+    char type[10];
+    extern int countn;
+    
     struct node *head;
     struct node { 
         struct node *left; 
         struct node *right; 
         char *token; 
     };
+    
 %}
 
 %union { 
@@ -57,106 +68,17 @@
 program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "program"); head = $$.nd; } 
 ;
 
-PackageClause: PACKAGE IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($1.nd, $2.nd, "package");}
+PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "package"); }
 ;
 
-// PackageName: IDENTIFIER
-// ;
-
-// ImportDecls: ImportDecl ImportDecls
-// |
-// ;
-
-// ImportDecl: IMPORT STRING
-// | IMPORT LPAREN ImportSpecs RPAREN
-// ;
-
-// ImportSpecs: ImportSpecs STRING
-// | 
-// ;
 
 
-// ImportSpec: '.' STRING 
-// | IDENTIFIER STRING 
-// | STRING
-// ;
-
-// ImportPath: STRING
-// ;
-/*------*/
-
-// var_declarations : VAR declaration { $$.nd = $2.nd; }           
-// | VAR LPAREN declaration_list  RPAREN    
+declaration : VAR { add('K'); } IDENTIFIER { add('V'); } type { $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($3.nd, $5.nd, "variable"); }                                                
+| VAR { add('K'); } IDENTIFIER  { add('V'); } type ASSIGN expression { $3.nd = mknode(NULL, NULL, $3.name);  struct node* variable = mknode($3.nd, $5.nd, "variable");$$.nd = mknode(variable, $7.nd, "="); }  
+| VAR { add('K'); } IDENTIFIER { add('V'); } ASSIGN expression { $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($3.nd, $6.nd, "="); }  
 ;
-
-// declaration_list : 				                   
-// | declaration declaration_list 
-// ;
-
-declaration : VAR IDENTIFIER type { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $3.nd, "variable");}                                                
-| VAR IDENTIFIER type ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name);  struct node* variable = mknode($2.nd, $3.nd, "variable");$$.nd = mknode(variable, $5.nd, "="); }  
-| VAR IDENTIFIER ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $4.nd, "="); }  
-// | identifier_list LPAREN IDENTIFIER  RPAREN                           
-// | identifier_list bracket_list IDENTIFIER   
-// | IDENTIFIER type
-// | IDENTIFIER STRING_TYPE ASSIGN expression_list
-// | IDENTIFIER STRING_TYPE        
-// | identifier_list LPAREN IDENTIFIER  RPAREN ASSIGN expression_list      
-// | identifier_list bracket_list IDENTIFIER ASSIGN expression_list  
-// | identifier_list STRUCT LBRACE declaration_list RBRACE 		
-// | identifier_list bracket_list STRUCT LBRACE declaration_list RBRACE	
-
-// identifier_list : IDENTIFIER type
-// | IDENTIFIER    
-// | IDENTIFIER type COMMA identifier_list
-
-// ;
-
-// type_declarations : TYPE type_declaration               
-// | TYPE LPAREN type_declaration_list  RPAREN  
-;
-
-// type_declaration : IDENTIFIER IDENTIFIER                                      
-// 		 | IDENTIFIER LPAREN IDENTIFIER  RPAREN                             
-// 		 | IDENTIFIER STRUCT LBRACE declaration_list RBRACE                 
-// 		 | IDENTIFIER bracket_list IDENTIFIER		                
-// 		 | IDENTIFIER bracket_list STRUCT LBRACE declaration_list RBRACE    
-// 		 ;
-
-// type_declaration_list : 					                        
-//                       | type_declaration type_declaration_list 
-                    //   ;
-
-function_declaration : FUNCTION IDENTIFIER LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $5.nd, "function"); }
+function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
-
-// signature : LPAREN parameters RPAREN //result
-//           | LPAREN RPAREN //result
-// 	      ;
-
-// result : 				
-//        | IDENTIFIER                   
-//        | bracket_list IDENTIFIER      
-//        | STRUCT LBRACE declaration_list RBRACE 
-//        | bracket_list STRUCT LBRACE declaration_list RBRACE 
-//        ;
-
-// parameters : identifier_list			          
-// 	    //    | parameter_unit COMMA parameters    
-// 	       ;
-
-// parameter_unit : identifier_list IDENTIFIER  
-//                | identifier_list LPAREN IDENTIFIER  RPAREN      
-//                | identifier_list bracket_list IDENTIFIER
-//               ;
-
-// bracket : '[' INTEGER ']'   
-//         | '[' ']'               
-//         ;
-
-// bracket_list : bracket               
-//              | bracket bracket_list  
-//              ;
 
 thing : IDENTIFIER {$$.nd = mknode(NULL, NULL, $1.name);}
       | literal {$$.nd = $1.nd;}
@@ -171,15 +93,7 @@ expression : term {$$.nd = $1.nd;}
            | binary_op {$$.nd = $1.nd;}       
            ;
 
-// primary_expression : IDENTIFIER
-//                    | literal
-//                    | LPAREN expression  RPAREN
-//                    | primary_expression LPAREN expression  RPAREN
 
-                //    | primary_expression LPAREN  RPAREN                 
-                //    | primary_expression '.' IDENTIFIER         
-                //    | primary_expression '[' expression ']'      
-                   ;
 
 
 
@@ -208,8 +122,8 @@ binary_op : expression LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); 
 statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}   
           | simple_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | return_stmt { $$.nd = mknode($1.nd, NULL, "statement") ;}  
-          | BREAK statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  				
-          | CONTINUE statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
+          | BREAK { add('K'); } statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "statement") ;}  				
+          | CONTINUE { add('K'); } statement { $$.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "statement") ;}  			
           | block_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
           | if_stmt	statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  		
           | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  						
@@ -218,16 +132,13 @@ statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}
           | { $$.nd = NULL ;}  
           ;
 
-// declaration_stmt : var_declarations
-                //  | type_declarations
-                 ;
+
 
 simple_stmt :inc_dec_stmt { $$.nd = $1.nd; }
             | assignment { $$.nd = $1.nd; }
             ;
 
-// expression_stmt : expression	/* weed to make sure its a function call */ { $$ = new_Expr_Simple_Statement($1, @1.first_line); }	
-                // ;
+
 
 inc_dec_stmt : IDENTIFIER INCREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); }
              | IDENTIFIER DECREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "DECREMENT"); }
@@ -258,10 +169,9 @@ mul_op_eq : MUL_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
           | CLEAR_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
           ;
 
-// short_variable_declaration : expression SHORT_VAR expression
-//                            ;
 
-return_stmt : RETURN return_ { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $2.nd, "RETURN"); }
+
+return_stmt : RETURN { add('K'); } return_ { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $3.nd, "RETURN"); }
             ;
 return_ : thing { $$.nd = $1.nd; }
         | { $$.nd = NULL ;}
@@ -269,9 +179,6 @@ return_ : thing { $$.nd = $1.nd; }
 block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
-// statement_list : statement 
-//                | statement statement_list
-//                ;
 
 boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }     
          | term LOGICAL_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }        
@@ -283,33 +190,15 @@ boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }
          | term GREATER_THAN term  { $$.nd = mknode($1.nd, $3.nd, $2.name); }
         ;       
 
-if_stmt : IF boolean_exp block_stmt  { $$.nd = mknode($2.nd, $3.nd, "IF"); }
-        | IF boolean_exp block_stmt ELSE if_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART"); $$.nd = mknode(cond_if, $5.nd, "IF-ELSE-IF"); }
-        | IF boolean_exp block_stmt ELSE block_stmt  { struct node* cond_if = mknode($2.nd, $3.nd, "IF-PART");  $$.nd = mknode(cond_if, $5.nd, "IF-ELSE"); }
+if_stmt : IF { add('K'); } boolean_exp block_stmt  { $$.nd = mknode($3.nd, $4.nd, "IF"); }
+        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } if_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART"); $$.nd = mknode(cond_if, $7.nd, "IF-ELSE-IF"); }
+        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } block_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART");  $$.nd = mknode(cond_if, $7.nd, "IF-ELSE"); }
         ;
 
 
-// switch_stmt : SWITCH simple_stmt '{' switch_cases '}' { $$.nd = mknode($2.nd, $4.nd, "SWITCH"); }
-//             ;
-
-// switch_cases : switch_case
-//             | switch_cases switch_case { $$.nd = mknode($1.nd, $2.nd, "SWITCH-CASES"); }
-//             ;
-
-// switch_case : CASE expression_list ':' statement_list { $$.nd = mknode($2.nd, $4.nd, "CASE"); }
-//            | DEFAULT ':' statement_list { $$.nd = mknode(NULL, $3.nd, "DEFAULT"); }
-//            ;
-
-// expression_list : expression
-//                | expression_list ',' expression { $$.nd = mknode($1.nd, $3.nd, "EXPR-LIST"); }
-//                ;
-
-// statement_list : statement
-//               | statement_list statement { $$.nd = mknode($1.nd, $2.nd, "STMT-LIST"); }
-//               ;
 
 
-for_stmt : FOR for_clause block_stmt  { $$.nd = mknode($2.nd, $3.nd, "FOR"); }
+for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.nd, "FOR"); }
             ;
 
 for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
@@ -318,14 +207,14 @@ for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct nod
 println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
              | PRINTLN LPAREN STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name);$$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
 
-type : INT_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
-     | STRING_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
-     | BOOL_TYPE {$$.nd = mknode(NULL, NULL, $1.name);}  
+type : INT_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
+     | STRING_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
+     | BOOL_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
 
-literal : INTEGER {$$.nd = mknode(NULL, NULL, $1.name);}                        
-        | STRING {$$.nd = mknode(NULL, NULL, $1.name);}                      
-        | FLOAT {$$.nd = mknode(NULL, NULL, $1.name);}                        
-        | BOOLEAN {$$.nd = mknode(NULL, NULL, $1.name);}                   
+literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                        
+        | STRING {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                      
+        | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                        
+        | BOOLEAN {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                   
         ;
 %%
 

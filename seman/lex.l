@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"
-int line_no=0;
+
+int countn = 0;
 %}
 %option yylineno
 
@@ -124,6 +125,6 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 \n              { yylineno++; }
 %%
 
-int yywrap(void) {
+int yywrap() {
    return 1;
 }
