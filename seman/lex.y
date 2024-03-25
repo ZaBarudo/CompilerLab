@@ -10,6 +10,9 @@
     int yywrap();
     struct node* cond_if;
     struct node* idnode;
+    char *s;
+    char * r;
+    int lno;
     //char idname[100];
     
 
@@ -29,7 +32,7 @@
     } symbol_table[40];
     int count=0;
     int q;
-    char type[10];
+    char type_n [10];
     extern int countn;
     
     struct node *head;
@@ -45,6 +48,7 @@
 	struct var_name { 
 		char name[100]; 
 		struct node* nd;
+        char type[10];
 	} nd_obj; 
     struct type_name {
         char name[100];
@@ -74,12 +78,12 @@ program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "prog
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "package"); }
 ;
 
-declaration : VAR { add('K'); } IDENTIFIER { add('V'); } declaration1 { $3.nd = mknode(NULL, NULL, $3.name);  idnode = $3.nd; }
+declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 { $3.nd = mknode(NULL, NULL, $3.name);  idnode = $3.nd; }
             ;
 
-declaration1 : type { $$.nd = mknode(idnode, $1.nd, "variable"); }                                                
-| type ASSIGN expression { idnode = mknode(NULL, NULL, "identifier");  struct node* variable = mknode(idnode, $1.nd, "variable");$$.nd = mknode(variable, idnode, "="); }  
-| ASSIGN expression { idnode = mknode(NULL, NULL, "identifier"); $$.nd = mknode(idnode, $2.nd, "="); }  
+declaration1 : type { add('V'); $$.nd = mknode(idnode, $1.nd, "variable"); }                                                
+| type ASSIGN expression { add('V'); idnode = mknode(NULL, NULL, "identifier");  struct node* variable = mknode(idnode, $1.nd, "variable");$$.nd = mknode(variable, idnode, "="); }  
+| ASSIGN expression { add('V'); idnode = mknode(NULL, NULL, "identifier"); $$.nd = mknode(idnode, $2.nd, "="); }  
 ;
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
@@ -212,9 +216,9 @@ for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct nod
 println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
              | PRINTLN LPAREN STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name);$$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
 
-type : INT_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
-     | STRING_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
-     | BOOL_TYPE {$$.nd = mknode(NULL, NULL, $1.name); insert_type(); }  
+type : INT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
+     | STRING_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
+     | BOOL_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
 
 literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                        
         | STRING {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                      
@@ -249,10 +253,12 @@ int main() {
     return 0;
 }
 
-int search(char *type) { 
+int search(char *type_n) { 
     int i; 
+    
     for(i=count-1; i>=0; i--) {
-        if(strcmp(symbol_table[i].id_name, type)==0) {   
+        if(strcmp(symbol_table[i].id_name, type_n)==0) {  
+            
             return -1;
             break;  
         }
@@ -261,11 +267,14 @@ int search(char *type) {
 }
 
 void add(char c) {
-  q=search(yytext);
+   
+  if(c == 'V') {q=search(r);}
+  else q=search(yytext);
+  
   if(!q) {
     if(c == 'H') {
       symbol_table[count].id_name=strdup(yytext);        
-      symbol_table[count].data_type=strdup(type);     
+      symbol_table[count].data_type=strdup(type_n);     
       symbol_table[count].line_no=yylineno;    
       symbol_table[count].type=strdup("Header");
       count++;  
@@ -277,9 +286,10 @@ void add(char c) {
       symbol_table[count].type=strdup("Keyword\t");   
       count++;  
     }  else if(c == 'V') {
-      symbol_table[count].id_name=strdup(yytext);
-      symbol_table[count].data_type=strdup(type);
-      symbol_table[count].line_no=yylineno;
+      
+      symbol_table[count].id_name=strdup(r);
+      symbol_table[count].data_type=strdup(type_n);
+      symbol_table[count].line_no=lno;
       symbol_table[count].type=strdup("Variable");   
       count++;  
     }  else if(c == 'C') {
@@ -290,7 +300,7 @@ void add(char c) {
       count++;  
     }  else if(c == 'F') {
       symbol_table[count].id_name=strdup(yytext);
-      symbol_table[count].data_type=strdup(type);
+      symbol_table[count].data_type=strdup(type_n);
       symbol_table[count].line_no=yylineno;
       symbol_table[count].type=strdup("Function");   
       count++;  
@@ -298,7 +308,8 @@ void add(char c) {
 }
 }
 void insert_type() {
-	strcpy(type, yytext);
+    printf("%s\n",yytext);
+	strcpy(type_n, s);
 }
 
 int yyerror(const char *msg)
