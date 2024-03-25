@@ -121,8 +121,9 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 [^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext); }
 \"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
-[ \t\n\r]         { ; } /* Skip whitespace and newlines */
+
 \n              { yylineno++; }
+[ \t\n\r]         { ; } /* Skip whitespace and newlines */
 %%
 
 int yywrap() {

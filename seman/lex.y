@@ -4,7 +4,6 @@
     #include<stdlib.h>
     #include<ctype.h>
     #include"lex.yy.c"
-    #define YYDEBUG 1
     int yyerror(const char *s);
     int yylex();
     int yywrap();
@@ -68,7 +67,6 @@
 %type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt term thing return_ 
 
-%define parse.error verbose
 %%
 
 
@@ -245,11 +243,7 @@ int main() {
 	printf("\n\n");
     if(success)
         printf("Parsing Successful\n");
-    printf("\n\n");
-    printf("PARSE TREE");
-    printf("\n\n");
-	printBT(head);
-    printf("\n\n");
+
     return 0;
 }
 
