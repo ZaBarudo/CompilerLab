@@ -19,6 +19,7 @@
     void insert_type();
     int search(char *);
     void insert_type();
+    void check_declaration(char *);
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
     void printBT(struct node*);
@@ -33,6 +34,8 @@
     int q;
     char type_n [10];
     extern int countn;
+    int sem_errors=0;
+    char errors[10][100];
     
     struct node *head;
     struct node { 
@@ -86,11 +89,11 @@ declaration1 : type { add('V'); $$.nd = mknode(idnode, $1.nd, "variable"); }
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
 
-thing : IDENTIFIER {$$.nd = mknode(NULL, NULL, $1.name);}
+thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name);}
       | literal {$$.nd = $1.nd;}
       ;
 
-term: IDENTIFIER {$$.nd = mknode(NULL, NULL, $1.name);}
+term: IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name);}
     | literal {$$.nd = $1.nd;}
     | LPAREN expression RPAREN {$$.nd = $2.nd;}
     ;
@@ -146,14 +149,14 @@ simple_stmt :inc_dec_stmt { $$.nd = $1.nd; }
 
 
 
-inc_dec_stmt : IDENTIFIER INCREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); }
-             | IDENTIFIER DECREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "DECREMENT"); }
+inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); }
+             | IDENTIFIER { check_declaration($1.name); } DECREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "DECREMENT"); }
              ;
 
 /* https://golang.org/ref/spec#Operands
  The blank identifier may appear as an operand only on the left-hand side of an assignment. */ 
-assignment : IDENTIFIER ASSIGN expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "="); }
-           | IDENTIFIER assign_op expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, $2.name); }
+assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "="); }
+           | IDENTIFIER { check_declaration($1.name); } assign_op expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, $1.name); }
            ;
 
 assign_op : add_op_eq {$$.nd = $1.nd;}
@@ -211,7 +214,7 @@ for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.n
 for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
            ;
 
-println_stmt : PRINTLN LPAREN IDENTIFIER RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
+println_stmt : PRINTLN LPAREN IDENTIFIER { check_declaration($1.name); } RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
              | PRINTLN LPAREN STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name);$$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
 
 type : INT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
@@ -243,8 +246,25 @@ int main() {
 	printf("\n\n");
     if(success)
         printf("Parsing Successful\n");
-
+    printf("\t\t\t\t\t\t\t\t PHASE 3: SEMANTIC ANALYSIS \n\n");
+	if(sem_errors>0) {
+		printf("Semantic analysis completed with %d errors\n", sem_errors);
+		for(int i=0; i<sem_errors; i++){
+			printf("\t - %s", errors[i]);
+		}
+	} else {
+		printf("Semantic analysis completed with no errors");
+	}
+	printf("\n\n");
     return 0;
+}
+
+void check_declaration(char *c) {
+    q = search(c);
+    if(!q) {
+        sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not declared before usage!\n", countn+1, c);
+		sem_errors++;
+    }
 }
 
 int search(char *type_n) { 
