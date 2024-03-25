@@ -1,7 +1,7 @@
 package main
 
 func main(){
-
+    var a int
     var b int
     b = 0
     a = b + 1

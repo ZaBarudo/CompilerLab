@@ -52,11 +52,11 @@
 		struct node* nd;
         char type[10];
 	} nd_obj; 
-    struct type_name {
+    struct var_name2 {
         char name[100];
         struct node* nd;
         char type[10];
-    } type_nd_obj;
+    } nd_obj2;
 }
 
 %token <nd_obj> PLUS MINUS TIMES DIVIDE ASSIGN MODULO BITWISE_AND BITWISE_OR BITWISE_XOR BIT_CLEAR LEFT_SHIFT RIGHT_SHIFT ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN 
@@ -285,41 +285,58 @@ void add(char c) {
   if(c == 'V') {q=search(r);}
   else q=search(yytext);
   
-  if(!q) {
-    if(c == 'H') {
-      symbol_table[count].id_name=strdup(yytext);        
-      symbol_table[count].data_type=strdup(type_n);     
-      symbol_table[count].line_no=yylineno;    
-      symbol_table[count].type=strdup("Header");
-      count++;  
-    }  
-    else if(c == 'K') {
-      symbol_table[count].id_name=strdup(yytext);
-      symbol_table[count].data_type=strdup("N/A");
-      symbol_table[count].line_no=yylineno;
-      symbol_table[count].type=strdup("Keyword\t");   
-      count++;  
-    }  else if(c == 'V') {
-      
-      symbol_table[count].id_name=strdup(r);
-      symbol_table[count].data_type=strdup(type_n);
-      symbol_table[count].line_no=lno;
-      symbol_table[count].type=strdup("Variable");   
-      count++;  
-    }  else if(c == 'C') {
-      symbol_table[count].id_name=strdup(yytext);
-      symbol_table[count].data_type=strdup("CONST");
-      symbol_table[count].line_no=yylineno;
-      symbol_table[count].type=strdup("Constant");   
-      count++;  
-    }  else if(c == 'F') {
-      symbol_table[count].id_name=strdup(yytext);
-      symbol_table[count].data_type=strdup(type_n);
-      symbol_table[count].line_no=yylineno;
-      symbol_table[count].type=strdup("Function");   
-      count++;  
+    if(!q) {
+        if(c == 'H') {
+        symbol_table[count].id_name=strdup(yytext);        
+        symbol_table[count].data_type=strdup(type_n);     
+        symbol_table[count].line_no=yylineno;    
+        symbol_table[count].type=strdup("Header");
+        count++;  
+        }  
+        else if(c == 'K') {
+        symbol_table[count].id_name=strdup(yytext);
+        symbol_table[count].data_type=strdup("N/A");
+        symbol_table[count].line_no=yylineno;
+        symbol_table[count].type=strdup("Keyword\t");   
+        count++;  
+        }  else if(c == 'V') {
+        
+        symbol_table[count].id_name=strdup(r);
+        symbol_table[count].data_type=strdup(type_n);
+        symbol_table[count].line_no=lno;
+        symbol_table[count].type=strdup("Variable");   
+        count++;  
+        }  else if(c == 'C') {
+        symbol_table[count].id_name=strdup(yytext);
+        symbol_table[count].data_type=strdup("CONST");
+        symbol_table[count].line_no=yylineno;
+        symbol_table[count].type=strdup("Constant");   
+        count++;  
+        }  else if(c == 'F') {
+        symbol_table[count].id_name=strdup(yytext);
+        symbol_table[count].data_type=strdup(type_n);
+        symbol_table[count].line_no=yylineno;
+        symbol_table[count].type=strdup("Function");   
+        count++;  
+        }
+    }
+    else if(c == 'V' && q) {
+        sprintf(errors[sem_errors], "Line %d: Multiple declarations of \"%s\" not allowed!\n", countn+1, yytext );
+		sem_errors++;
     }
 }
+int check_types(char *type1, char *type2) { 
+    // declaration with no init 
+    if(!strcmp(type2, "null")) return -1; 
+    // both datatypes are same 
+    if(!strcmp(type1, type2)) return 0; 
+    // both datatypes are different 
+    if(!strcmp(type1, "int") && !strcmp(type2, "float")) return 1;
+    if(!strcmp(type1, "float") && !strcmp(type2, "int")) return 2;
+    if(!strcmp(type1, "int") && !strcmp(type2, "char")) return 3;
+    if(!strcmp(type1, "char") && !strcmp(type2, "int")) return 4;
+    if(!strcmp(type1, "float") && !strcmp(type2, "char")) return 5;
+    if(!strcmp(type1, "char") && !strcmp(type2, "float")) return 6;
 }
 void insert_type() {
     printf("%s\n",yytext);
