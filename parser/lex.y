@@ -3,6 +3,7 @@
     #include<string.h>
     #include<stdlib.h>
     #include<ctype.h>
+    #include"lex.yy.c"
     #define YYDEBUG 1
     int yyerror(const char *s);
     int yylex(void);
@@ -84,6 +85,7 @@ PackageClause: PACKAGE IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $2.nd = 
 declaration : VAR IDENTIFIER type { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $3.nd, "variable");}                                                
 | VAR IDENTIFIER type ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name);  struct node* variable = mknode($2.nd, $3.nd, "variable");$$.nd = mknode(variable, $5.nd, "="); }  
 | VAR IDENTIFIER ASSIGN expression { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $4.nd, "="); }  
+;
 // | identifier_list LPAREN IDENTIFIER  RPAREN                           
 // | identifier_list bracket_list IDENTIFIER   
 // | IDENTIFIER type

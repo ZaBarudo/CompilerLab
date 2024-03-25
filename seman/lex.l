@@ -122,7 +122,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 \"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
 [ \t\n\r]         { ; } /* Skip whitespace and newlines */
-\n              { yylineno++; countn++; }
+\n              { yylineno++; }
 %%
 
 int yywrap() {

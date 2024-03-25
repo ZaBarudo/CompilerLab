@@ -73,6 +73,7 @@
     #include<string.h>
     #include<stdlib.h>
     #include<ctype.h>
+    #include"lex.yy.c"
     #define YYDEBUG 1
     int yyerror(const char *s);
     int yylex(void);
@@ -89,7 +90,7 @@
         char *token; 
     };
 
-#line 93 "y.tab.c"
+#line 94 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -320,14 +321,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "lex.y"
+#line 24 "lex.y"
  
 	struct var_name { 
 		char name[100]; 
 		struct node* nd;
 	} nd_obj; 
 
-#line 331 "y.tab.c"
+#line 332 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -857,15 +858,15 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    45,    45,    48,    84,    85,    86,   118,   149,   150,
-     153,   154,   155,   158,   159,   174,   175,   176,   177,   178,
-     179,   180,   181,   182,   183,   184,   185,   186,   187,   188,
-     189,   190,   191,   192,   196,   197,   198,   199,   200,   201,
-     202,   203,   204,   205,   206,   213,   214,   220,   221,   226,
-     227,   230,   231,   234,   235,   236,   237,   240,   241,   242,
-     243,   244,   245,   246,   252,   254,   255,   257,   264,   265,
-     266,   267,   268,   269,   270,   271,   274,   275,   276,   300,
-     303,   306,   307,   309,   310,   311,   313,   314,   315,   316
+       0,    46,    46,    49,    85,    86,    87,   120,   151,   152,
+     155,   156,   157,   160,   161,   176,   177,   178,   179,   180,
+     181,   182,   183,   184,   185,   186,   187,   188,   189,   190,
+     191,   192,   193,   194,   198,   199,   200,   201,   202,   203,
+     204,   205,   206,   207,   208,   215,   216,   222,   223,   228,
+     229,   232,   233,   236,   237,   238,   239,   242,   243,   244,
+     245,   246,   247,   248,   254,   256,   257,   259,   266,   267,
+     268,   269,   270,   271,   272,   273,   276,   277,   278,   302,
+     305,   308,   309,   311,   312,   313,   315,   316,   317,   318
 };
 #endif
 
@@ -1816,535 +1817,535 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: PackageClause function_declaration  */
-#line 45 "lex.y"
+#line 46 "lex.y"
                                             { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "program"); head = (yyval.nd_obj).nd; }
-#line 1822 "y.tab.c"
+#line 1823 "y.tab.c"
     break;
 
   case 3: /* PackageClause: PACKAGE IDENTIFIER  */
-#line 48 "lex.y"
+#line 49 "lex.y"
                                   {(yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyvsp[0].nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "package");}
-#line 1828 "y.tab.c"
+#line 1829 "y.tab.c"
     break;
 
   case 4: /* declaration: VAR IDENTIFIER type  */
-#line 84 "lex.y"
+#line 85 "lex.y"
                                   { (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "variable");}
-#line 1834 "y.tab.c"
+#line 1835 "y.tab.c"
     break;
 
   case 5: /* declaration: VAR IDENTIFIER type ASSIGN expression  */
-#line 85 "lex.y"
+#line 86 "lex.y"
                                         { (yyvsp[-3].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-3].nd_obj).name);  struct node* variable = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[-2].nd_obj).nd, "variable");(yyval.nd_obj).nd = mknode(variable, (yyvsp[0].nd_obj).nd, "="); }
-#line 1840 "y.tab.c"
+#line 1841 "y.tab.c"
     break;
 
   case 6: /* declaration: VAR IDENTIFIER ASSIGN expression  */
-#line 86 "lex.y"
+#line 87 "lex.y"
                                    { (yyvsp[-2].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-2].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, "="); }
-#line 1846 "y.tab.c"
+#line 1847 "y.tab.c"
     break;
 
   case 7: /* function_declaration: FUNCTION IDENTIFIER LPAREN RPAREN block_stmt  */
-#line 118 "lex.y"
+#line 120 "lex.y"
                                                                     { (yyvsp[-3].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-3].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[0].nd_obj).nd, "function"); }
-#line 1852 "y.tab.c"
+#line 1853 "y.tab.c"
     break;
 
   case 8: /* thing: IDENTIFIER  */
-#line 149 "lex.y"
+#line 151 "lex.y"
                    {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 1858 "y.tab.c"
+#line 1859 "y.tab.c"
     break;
 
   case 9: /* thing: literal  */
-#line 150 "lex.y"
+#line 152 "lex.y"
                 {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 1864 "y.tab.c"
+#line 1865 "y.tab.c"
     break;
 
   case 10: /* term: IDENTIFIER  */
-#line 153 "lex.y"
+#line 155 "lex.y"
                  {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 1870 "y.tab.c"
+#line 1871 "y.tab.c"
     break;
 
   case 11: /* term: literal  */
-#line 154 "lex.y"
+#line 156 "lex.y"
               {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 1876 "y.tab.c"
+#line 1877 "y.tab.c"
     break;
 
   case 12: /* term: LPAREN expression RPAREN  */
-#line 155 "lex.y"
+#line 157 "lex.y"
                                {(yyval.nd_obj).nd = (yyvsp[-1].nd_obj).nd;}
-#line 1882 "y.tab.c"
+#line 1883 "y.tab.c"
     break;
 
   case 13: /* expression: term  */
-#line 158 "lex.y"
+#line 160 "lex.y"
                   {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 1888 "y.tab.c"
+#line 1889 "y.tab.c"
     break;
 
   case 14: /* expression: binary_op  */
-#line 159 "lex.y"
+#line 161 "lex.y"
                        {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 1894 "y.tab.c"
+#line 1895 "y.tab.c"
     break;
 
   case 15: /* binary_op: expression LOGICAL_OR term  */
-#line 174 "lex.y"
+#line 176 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1900 "y.tab.c"
+#line 1901 "y.tab.c"
     break;
 
   case 16: /* binary_op: expression LOGICAL_AND term  */
-#line 175 "lex.y"
+#line 177 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1906 "y.tab.c"
+#line 1907 "y.tab.c"
     break;
 
   case 17: /* binary_op: expression EQUAL_EQUAL term  */
-#line 176 "lex.y"
+#line 178 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1912 "y.tab.c"
+#line 1913 "y.tab.c"
     break;
 
   case 18: /* binary_op: expression NOT_EQUAL term  */
-#line 177 "lex.y"
+#line 179 "lex.y"
                                      { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1918 "y.tab.c"
+#line 1919 "y.tab.c"
     break;
 
   case 19: /* binary_op: expression LESS_THAN_OR_EQUAL term  */
-#line 178 "lex.y"
+#line 180 "lex.y"
                                               { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1924 "y.tab.c"
+#line 1925 "y.tab.c"
     break;
 
   case 20: /* binary_op: expression GREATER_THAN_OR_EQUAL term  */
-#line 179 "lex.y"
+#line 181 "lex.y"
                                                  { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1930 "y.tab.c"
+#line 1931 "y.tab.c"
     break;
 
   case 21: /* binary_op: expression LESS_THAN term  */
-#line 180 "lex.y"
+#line 182 "lex.y"
                                      { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1936 "y.tab.c"
+#line 1937 "y.tab.c"
     break;
 
   case 22: /* binary_op: expression GREATER_THAN term  */
-#line 181 "lex.y"
+#line 183 "lex.y"
                                         { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1942 "y.tab.c"
+#line 1943 "y.tab.c"
     break;
 
   case 23: /* binary_op: expression PLUS term  */
-#line 182 "lex.y"
+#line 184 "lex.y"
                                 { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1948 "y.tab.c"
+#line 1949 "y.tab.c"
     break;
 
   case 24: /* binary_op: expression MINUS term  */
-#line 183 "lex.y"
+#line 185 "lex.y"
                                  { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1954 "y.tab.c"
+#line 1955 "y.tab.c"
     break;
 
   case 25: /* binary_op: expression BITWISE_OR term  */
-#line 184 "lex.y"
+#line 186 "lex.y"
                                       { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1960 "y.tab.c"
+#line 1961 "y.tab.c"
     break;
 
   case 26: /* binary_op: expression BITWISE_XOR term  */
-#line 185 "lex.y"
+#line 187 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1966 "y.tab.c"
+#line 1967 "y.tab.c"
     break;
 
   case 27: /* binary_op: expression TIMES term  */
-#line 186 "lex.y"
+#line 188 "lex.y"
                                  { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1972 "y.tab.c"
+#line 1973 "y.tab.c"
     break;
 
   case 28: /* binary_op: expression DIVIDE term  */
-#line 187 "lex.y"
+#line 189 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1978 "y.tab.c"
+#line 1979 "y.tab.c"
     break;
 
   case 29: /* binary_op: expression MODULO term  */
-#line 188 "lex.y"
+#line 190 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1984 "y.tab.c"
+#line 1985 "y.tab.c"
     break;
 
   case 30: /* binary_op: expression RIGHT_SHIFT term  */
-#line 189 "lex.y"
+#line 191 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1990 "y.tab.c"
+#line 1991 "y.tab.c"
     break;
 
   case 31: /* binary_op: expression LEFT_SHIFT term  */
-#line 190 "lex.y"
+#line 192 "lex.y"
                                       { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 1996 "y.tab.c"
+#line 1997 "y.tab.c"
     break;
 
   case 32: /* binary_op: expression BITWISE_AND term  */
-#line 191 "lex.y"
+#line 193 "lex.y"
                                        { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2002 "y.tab.c"
+#line 2003 "y.tab.c"
     break;
 
   case 33: /* binary_op: expression BIT_CLEAR term  */
-#line 192 "lex.y"
+#line 194 "lex.y"
                                      { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2008 "y.tab.c"
+#line 2009 "y.tab.c"
     break;
 
   case 34: /* statement: declaration statement  */
-#line 196 "lex.y"
+#line 198 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2014 "y.tab.c"
+#line 2015 "y.tab.c"
     break;
 
   case 35: /* statement: simple_stmt statement  */
-#line 197 "lex.y"
+#line 199 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2020 "y.tab.c"
+#line 2021 "y.tab.c"
     break;
 
   case 36: /* statement: return_stmt  */
-#line 198 "lex.y"
+#line 200 "lex.y"
                         { (yyval.nd_obj).nd = mknode((yyvsp[0].nd_obj).nd, NULL, "statement") ;}
-#line 2026 "y.tab.c"
+#line 2027 "y.tab.c"
     break;
 
   case 37: /* statement: BREAK statement  */
-#line 199 "lex.y"
+#line 201 "lex.y"
                             { (yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2032 "y.tab.c"
+#line 2033 "y.tab.c"
     break;
 
   case 38: /* statement: CONTINUE statement  */
-#line 200 "lex.y"
+#line 202 "lex.y"
                                { (yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2038 "y.tab.c"
+#line 2039 "y.tab.c"
     break;
 
   case 39: /* statement: block_stmt statement  */
-#line 201 "lex.y"
+#line 203 "lex.y"
                                  { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2044 "y.tab.c"
+#line 2045 "y.tab.c"
     break;
 
   case 40: /* statement: if_stmt statement  */
-#line 202 "lex.y"
+#line 204 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2050 "y.tab.c"
+#line 2051 "y.tab.c"
     break;
 
   case 41: /* statement: for_stmt statement  */
-#line 203 "lex.y"
+#line 205 "lex.y"
                                { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2056 "y.tab.c"
+#line 2057 "y.tab.c"
     break;
 
   case 42: /* statement: println_stmt statement  */
-#line 204 "lex.y"
+#line 206 "lex.y"
                                    { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "statement") ;}
-#line 2062 "y.tab.c"
+#line 2063 "y.tab.c"
     break;
 
   case 43: /* statement: COMMENT statement  */
-#line 205 "lex.y"
+#line 207 "lex.y"
                               { (yyval.nd_obj).nd = mknode(NULL, (yyvsp[0].nd_obj).nd, "COMMENT") ;}
-#line 2068 "y.tab.c"
+#line 2069 "y.tab.c"
     break;
 
   case 44: /* statement: %empty  */
-#line 206 "lex.y"
+#line 208 "lex.y"
             { (yyval.nd_obj).nd = NULL ;}
-#line 2074 "y.tab.c"
+#line 2075 "y.tab.c"
     break;
 
   case 45: /* simple_stmt: inc_dec_stmt  */
-#line 213 "lex.y"
+#line 215 "lex.y"
                           { (yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd; }
-#line 2080 "y.tab.c"
+#line 2081 "y.tab.c"
     break;
 
   case 46: /* simple_stmt: assignment  */
-#line 214 "lex.y"
+#line 216 "lex.y"
                          { (yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd; }
-#line 2086 "y.tab.c"
+#line 2087 "y.tab.c"
     break;
 
   case 47: /* inc_dec_stmt: IDENTIFIER INCREMENT  */
-#line 220 "lex.y"
+#line 222 "lex.y"
                                     { (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, NULL, "INCREMENT"); }
-#line 2092 "y.tab.c"
+#line 2093 "y.tab.c"
     break;
 
   case 48: /* inc_dec_stmt: IDENTIFIER DECREMENT  */
-#line 221 "lex.y"
+#line 223 "lex.y"
                                     { (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, NULL, "DECREMENT"); }
-#line 2098 "y.tab.c"
+#line 2099 "y.tab.c"
     break;
 
   case 49: /* assignment: IDENTIFIER ASSIGN expression  */
-#line 226 "lex.y"
+#line 228 "lex.y"
                                           { (yyvsp[-2].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-2].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, "="); }
-#line 2104 "y.tab.c"
+#line 2105 "y.tab.c"
     break;
 
   case 50: /* assignment: IDENTIFIER assign_op expression  */
-#line 227 "lex.y"
+#line 229 "lex.y"
                                              { (yyvsp[-2].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-2].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2110 "y.tab.c"
+#line 2111 "y.tab.c"
     break;
 
   case 51: /* assign_op: add_op_eq  */
-#line 230 "lex.y"
+#line 232 "lex.y"
                       {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 2116 "y.tab.c"
+#line 2117 "y.tab.c"
     break;
 
   case 52: /* assign_op: mul_op_eq  */
-#line 231 "lex.y"
+#line 233 "lex.y"
                       {(yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd;}
-#line 2122 "y.tab.c"
+#line 2123 "y.tab.c"
     break;
 
   case 53: /* add_op_eq: ADD_ASSIGN  */
-#line 234 "lex.y"
+#line 236 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2128 "y.tab.c"
+#line 2129 "y.tab.c"
     break;
 
   case 54: /* add_op_eq: SUB_ASSIGN  */
-#line 235 "lex.y"
+#line 237 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2134 "y.tab.c"
+#line 2135 "y.tab.c"
     break;
 
   case 55: /* add_op_eq: OR_ASSIGN  */
-#line 236 "lex.y"
+#line 238 "lex.y"
                       {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2140 "y.tab.c"
+#line 2141 "y.tab.c"
     break;
 
   case 56: /* add_op_eq: XOR_ASSIGN  */
-#line 237 "lex.y"
+#line 239 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2146 "y.tab.c"
+#line 2147 "y.tab.c"
     break;
 
   case 57: /* mul_op_eq: MUL_ASSIGN  */
-#line 240 "lex.y"
+#line 242 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2152 "y.tab.c"
+#line 2153 "y.tab.c"
     break;
 
   case 58: /* mul_op_eq: DIV_ASSIGN  */
-#line 241 "lex.y"
+#line 243 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2158 "y.tab.c"
+#line 2159 "y.tab.c"
     break;
 
   case 59: /* mul_op_eq: MOD_ASSIGN  */
-#line 242 "lex.y"
+#line 244 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2164 "y.tab.c"
+#line 2165 "y.tab.c"
     break;
 
   case 60: /* mul_op_eq: LEFT_SHIFT_ASSIGN  */
-#line 243 "lex.y"
+#line 245 "lex.y"
                               {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2170 "y.tab.c"
+#line 2171 "y.tab.c"
     break;
 
   case 61: /* mul_op_eq: RIGHT_SHIFT_ASSIGN  */
-#line 244 "lex.y"
+#line 246 "lex.y"
                                {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2176 "y.tab.c"
+#line 2177 "y.tab.c"
     break;
 
   case 62: /* mul_op_eq: AND_ASSIGN  */
-#line 245 "lex.y"
+#line 247 "lex.y"
                        {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2182 "y.tab.c"
+#line 2183 "y.tab.c"
     break;
 
   case 63: /* mul_op_eq: CLEAR_ASSIGN  */
-#line 246 "lex.y"
+#line 248 "lex.y"
                          {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2188 "y.tab.c"
+#line 2189 "y.tab.c"
     break;
 
   case 64: /* return_stmt: RETURN return_  */
-#line 252 "lex.y"
+#line 254 "lex.y"
                              { (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, "return"); (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "RETURN"); }
-#line 2194 "y.tab.c"
+#line 2195 "y.tab.c"
     break;
 
   case 65: /* return_: thing  */
-#line 254 "lex.y"
+#line 256 "lex.y"
                 { (yyval.nd_obj).nd = (yyvsp[0].nd_obj).nd; }
-#line 2200 "y.tab.c"
+#line 2201 "y.tab.c"
     break;
 
   case 66: /* return_: %empty  */
-#line 255 "lex.y"
+#line 257 "lex.y"
           { (yyval.nd_obj).nd = NULL ;}
-#line 2206 "y.tab.c"
+#line 2207 "y.tab.c"
     break;
 
   case 67: /* block_stmt: LBRACE statement RBRACE  */
-#line 257 "lex.y"
+#line 259 "lex.y"
                                      { (yyval.nd_obj).nd = (yyvsp[-1].nd_obj).nd; }
-#line 2212 "y.tab.c"
+#line 2213 "y.tab.c"
     break;
 
   case 68: /* boolean_exp: term LOGICAL_OR term  */
-#line 264 "lex.y"
+#line 266 "lex.y"
                                   { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2218 "y.tab.c"
+#line 2219 "y.tab.c"
     break;
 
   case 69: /* boolean_exp: term LOGICAL_AND term  */
-#line 265 "lex.y"
+#line 267 "lex.y"
                                  { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2224 "y.tab.c"
+#line 2225 "y.tab.c"
     break;
 
   case 70: /* boolean_exp: term EQUAL_EQUAL term  */
-#line 266 "lex.y"
+#line 268 "lex.y"
                                  { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2230 "y.tab.c"
+#line 2231 "y.tab.c"
     break;
 
   case 71: /* boolean_exp: term NOT_EQUAL term  */
-#line 267 "lex.y"
+#line 269 "lex.y"
                                { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2236 "y.tab.c"
+#line 2237 "y.tab.c"
     break;
 
   case 72: /* boolean_exp: term LESS_THAN_OR_EQUAL term  */
-#line 268 "lex.y"
+#line 270 "lex.y"
                                         { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2242 "y.tab.c"
+#line 2243 "y.tab.c"
     break;
 
   case 73: /* boolean_exp: term GREATER_THAN_OR_EQUAL term  */
-#line 269 "lex.y"
+#line 271 "lex.y"
                                            { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2248 "y.tab.c"
+#line 2249 "y.tab.c"
     break;
 
   case 74: /* boolean_exp: term LESS_THAN term  */
-#line 270 "lex.y"
+#line 272 "lex.y"
                                { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2254 "y.tab.c"
+#line 2255 "y.tab.c"
     break;
 
   case 75: /* boolean_exp: term GREATER_THAN term  */
-#line 271 "lex.y"
+#line 273 "lex.y"
                                    { (yyval.nd_obj).nd = mknode((yyvsp[-2].nd_obj).nd, (yyvsp[0].nd_obj).nd, (yyvsp[-1].nd_obj).name); }
-#line 2260 "y.tab.c"
+#line 2261 "y.tab.c"
     break;
 
   case 76: /* if_stmt: IF boolean_exp block_stmt  */
-#line 274 "lex.y"
+#line 276 "lex.y"
                                      { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "IF"); }
-#line 2266 "y.tab.c"
+#line 2267 "y.tab.c"
     break;
 
   case 77: /* if_stmt: IF boolean_exp block_stmt ELSE if_stmt  */
-#line 275 "lex.y"
+#line 277 "lex.y"
                                                   { struct node* cond_if = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[-2].nd_obj).nd, "IF-PART"); (yyval.nd_obj).nd = mknode(cond_if, (yyvsp[0].nd_obj).nd, "IF-ELSE-IF"); }
-#line 2272 "y.tab.c"
+#line 2273 "y.tab.c"
     break;
 
   case 78: /* if_stmt: IF boolean_exp block_stmt ELSE block_stmt  */
-#line 276 "lex.y"
+#line 278 "lex.y"
                                                      { struct node* cond_if = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[-2].nd_obj).nd, "IF-PART");  (yyval.nd_obj).nd = mknode(cond_if, (yyvsp[0].nd_obj).nd, "IF-ELSE"); }
-#line 2278 "y.tab.c"
+#line 2279 "y.tab.c"
     break;
 
   case 79: /* for_stmt: FOR for_clause block_stmt  */
-#line 300 "lex.y"
+#line 302 "lex.y"
                                       { (yyval.nd_obj).nd = mknode((yyvsp[-1].nd_obj).nd, (yyvsp[0].nd_obj).nd, "FOR"); }
-#line 2284 "y.tab.c"
+#line 2285 "y.tab.c"
     break;
 
   case 80: /* for_clause: assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  */
-#line 303 "lex.y"
+#line 305 "lex.y"
                                                                      {struct node* ass_bool = mknode((yyvsp[-4].nd_obj).nd, (yyvsp[-2].nd_obj).nd, "ass-bool");  (yyval.nd_obj).nd = mknode(ass_bool, (yyvsp[0].nd_obj).nd, "FOR-CLAUSE"); }
-#line 2290 "y.tab.c"
+#line 2291 "y.tab.c"
     break;
 
   case 81: /* println_stmt: PRINTLN LPAREN IDENTIFIER RPAREN  */
-#line 306 "lex.y"
+#line 308 "lex.y"
                                                 { (yyvsp[-3].nd_obj).nd = mknode(NULL, NULL, "println"); (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name); (yyval.nd_obj).nd = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[-1].nd_obj).nd, "PRINTLN"); }
-#line 2296 "y.tab.c"
+#line 2297 "y.tab.c"
     break;
 
   case 82: /* println_stmt: PRINTLN LPAREN STRING RPAREN  */
-#line 307 "lex.y"
+#line 309 "lex.y"
                                             { (yyvsp[-3].nd_obj).nd = mknode(NULL, NULL, "println"); (yyvsp[-1].nd_obj).nd = mknode(NULL, NULL, (yyvsp[-1].nd_obj).name);(yyval.nd_obj).nd = mknode((yyvsp[-3].nd_obj).nd, (yyvsp[-1].nd_obj).nd, "PRINTLN"); }
-#line 2302 "y.tab.c"
+#line 2303 "y.tab.c"
     break;
 
   case 83: /* type: INT_TYPE  */
-#line 309 "lex.y"
+#line 311 "lex.y"
                 {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2308 "y.tab.c"
+#line 2309 "y.tab.c"
     break;
 
   case 84: /* type: STRING_TYPE  */
-#line 310 "lex.y"
+#line 312 "lex.y"
                    {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2314 "y.tab.c"
+#line 2315 "y.tab.c"
     break;
 
   case 85: /* type: BOOL_TYPE  */
-#line 311 "lex.y"
+#line 313 "lex.y"
                  {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2320 "y.tab.c"
+#line 2321 "y.tab.c"
     break;
 
   case 86: /* literal: INTEGER  */
-#line 313 "lex.y"
+#line 315 "lex.y"
                   {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2326 "y.tab.c"
+#line 2327 "y.tab.c"
     break;
 
   case 87: /* literal: STRING  */
-#line 314 "lex.y"
+#line 316 "lex.y"
                  {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2332 "y.tab.c"
+#line 2333 "y.tab.c"
     break;
 
   case 88: /* literal: FLOAT  */
-#line 315 "lex.y"
+#line 317 "lex.y"
                 {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2338 "y.tab.c"
+#line 2339 "y.tab.c"
     break;
 
   case 89: /* literal: BOOLEAN  */
-#line 316 "lex.y"
+#line 318 "lex.y"
                   {(yyval.nd_obj).nd = mknode(NULL, NULL, (yyvsp[0].nd_obj).name);}
-#line 2344 "y.tab.c"
+#line 2345 "y.tab.c"
     break;
 
 
-#line 2348 "y.tab.c"
+#line 2349 "y.tab.c"
 
       default: break;
     }
@@ -2568,7 +2569,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 318 "lex.y"
+#line 320 "lex.y"
 
 
 int main() {

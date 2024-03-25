@@ -5,12 +5,13 @@
     #include<ctype.h>
     #include"lex.yy.c"
     #define YYDEBUG 1
-    struct node* cond_if;
-    struct node* idnode;
-    //char idname[100];
     int yyerror(const char *s);
     int yylex();
     int yywrap();
+    struct node* cond_if;
+    struct node* idnode;
+    //char idname[100];
+    
 
     void add(char);
     void insert_type();
@@ -265,32 +266,32 @@ void add(char c) {
     if(c == 'H') {
       symbol_table[count].id_name=strdup(yytext);        
       symbol_table[count].data_type=strdup(type);     
-      symbol_table[count].line_no=countn;    
+      symbol_table[count].line_no=yylineno;    
       symbol_table[count].type=strdup("Header");
       count++;  
     }  
     else if(c == 'K') {
       symbol_table[count].id_name=strdup(yytext);
       symbol_table[count].data_type=strdup("N/A");
-      symbol_table[count].line_no=countn;
+      symbol_table[count].line_no=yylineno;
       symbol_table[count].type=strdup("Keyword\t");   
       count++;  
     }  else if(c == 'V') {
       symbol_table[count].id_name=strdup(yytext);
       symbol_table[count].data_type=strdup(type);
-      symbol_table[count].line_no=countn;
+      symbol_table[count].line_no=yylineno;
       symbol_table[count].type=strdup("Variable");   
       count++;  
     }  else if(c == 'C') {
       symbol_table[count].id_name=strdup(yytext);
       symbol_table[count].data_type=strdup("CONST");
-      symbol_table[count].line_no=countn;
+      symbol_table[count].line_no=yylineno;
       symbol_table[count].type=strdup("Constant");   
       count++;  
     }  else if(c == 'F') {
       symbol_table[count].id_name=strdup(yytext);
       symbol_table[count].data_type=strdup(type);
-      symbol_table[count].line_no=countn;
+      symbol_table[count].line_no=yylineno;
       symbol_table[count].type=strdup("Function");   
       count++;  
     }
