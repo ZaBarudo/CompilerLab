@@ -73,7 +73,7 @@
     #include<string.h>
     #include<stdlib.h>
     #include<ctype.h>
-    #include"lex.yy.c"
+    // #include"lex.yy.c"
     #define YYDEBUG 1
     int yyerror(const char *s);
     int yylex(void);

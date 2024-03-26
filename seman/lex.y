@@ -12,7 +12,6 @@
     char *s;
     char * r;
     int lno;
-    //char idname[100];
     
 
     void add(char);
@@ -22,6 +21,7 @@
     void check_declaration(char *);
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
+    char *get_type(char *var);
     void printBT(struct node*);
 
     struct dataType {
@@ -50,7 +50,6 @@
 	struct var_name { 
 		char name[100]; 
 		struct node* nd;
-        char type[10];
 	} nd_obj; 
     struct var_name2 {
         char name[100];
@@ -64,11 +63,12 @@
 %token <nd_obj> SHORT_VAR VARIADIC_PARAM SELECTOR EQUAL_EQUAL NOT_EQUAL LESS_THAN LESS_THAN_OR_EQUAL GREATER_THAN GREATER_THAN_OR_EQUAL LOGICAL_AND 
 %token <nd_obj> LOGICAL_OR LOGICAL_NOT IF ELSE WHILE FOR SWITCH CASE DEFAULT BREAK CONTINUE RETURN VAR INT_TYPE BOOL_TYPE STRING_TYPE IMPORT FUNCTION APPEND LEN PRINT PRINTLN
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
-%token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT
+%token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT FLOAT_TYPE
 
-%type <nd_obj> program PackageClause declaration declaration1 function_declaration expression type literal
-%type <nd_obj> binary_op statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt term thing return_ 
+%type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
+%type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
+%type <nd_obj> boolean_exp if_stmt  for_stmt for_clause println_stmt thing return_ 
+%type <nd_obj2> number expression binary_op term
 
 %%
 
@@ -79,13 +79,12 @@ program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "prog
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "package"); }
 ;
 
-declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 { $3.nd = mknode(NULL, NULL, $3.name);  idnode = $3.nd; }
+declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 { $3.nd = mknode(NULL, NULL, $3.name);  $$.nd = mknode($3.nd, $5.nd, "declaration"); }
             ;
 
-declaration1 : type { add('V'); $$.nd = mknode(idnode, $1.nd, "variable"); }                                                
-| type ASSIGN expression { add('V'); idnode = mknode(NULL, NULL, "identifier");  struct node* variable = mknode(idnode, $1.nd, "variable");$$.nd = mknode(variable, idnode, "="); }  
-| ASSIGN expression { add('V'); idnode = mknode(NULL, NULL, "identifier"); $$.nd = mknode(idnode, $2.nd, "="); }  
+declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable"); }                                                
 ;
+
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
 
@@ -93,38 +92,34 @@ thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.n
       | literal {$$.nd = $1.nd;}
       ;
 
-term: IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name);}
-    | literal {$$.nd = $1.nd;}
-    | LPAREN expression RPAREN {$$.nd = $2.nd;}
+term: IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name); strcpy($$.type, get_type($1.name));}
+    | number {$$.nd = $1.nd; strcpy($$.type, $1.type);}
+    | LPAREN expression RPAREN {$$.nd = $2.nd; strcpy($$.type, $2.type);}
     ;
 
-expression : term {$$.nd = $1.nd;}     
-           | binary_op {$$.nd = $1.nd;}       
+expression : term {$$.nd = $1.nd; strcpy($$.type, $1.type);}     
+           | binary_op {$$.nd = $1.nd; strcpy($$.type, $1.type);}       
            ;
 
-
-
-
-
-binary_op : expression LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
-         | expression LOGICAL_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }              
-         | expression EQUAL_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }            
-         | expression NOT_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
-         | expression LESS_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
-         | expression GREATER_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
-         | expression LESS_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression GREATER_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression PLUS term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression MINUS term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression BITWISE_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression BITWISE_XOR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression TIMES term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression DIVIDE term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression MODULO term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression RIGHT_SHIFT term { $$.nd = mknode($1.nd, $3.nd, $2.name); }       
-         | expression LEFT_SHIFT term { $$.nd = mknode($1.nd, $3.nd, $2.name); }        
-         | expression BITWISE_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }               
-         | expression BIT_CLEAR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
+binary_op : expression LOGICAL_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
+         | expression LOGICAL_AND term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }               
+         | expression EQUAL_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }             
+         | expression NOT_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
+         | expression LESS_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
+         | expression GREATER_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
+         | expression LESS_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression GREATER_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression PLUS term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }               
+         | expression MINUS term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression BITWISE_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression BITWISE_XOR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression TIMES term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression DIVIDE term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression MODULO term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression RIGHT_SHIFT term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }        
+         | expression LEFT_SHIFT term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }         
+         | expression BITWISE_AND term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
+         | expression BIT_CLEAR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
          ;
 
 
@@ -155,8 +150,26 @@ inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { $1.nd = mk
 
 /* https://golang.org/ref/spec#Operands
  The blank identifier may appear as an operand only on the left-hand side of an assignment. */ 
-assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "="); }
-           | IDENTIFIER { check_declaration($1.name); } assign_op expression { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, $1.name); }
+assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression { 
+                if(strcmp(get_type($1.name), $4.type)) {
+                    
+                    sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                    sem_errors++;
+                } else {
+                    
+                    $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, "="); 
+                    }
+            }
+           | IDENTIFIER { check_declaration($1.name); } assign_op expression { 
+                if(strcmp(get_type($1.name), $4.type)) {
+                    
+                    sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                    sem_errors++;
+                } else {
+                    
+                    $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, $1.name); 
+                    }
+            }
            ;
 
 assign_op : add_op_eq {$$.nd = $1.nd;}
@@ -189,24 +202,19 @@ block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
 
-boolean_exp: term LOGICAL_OR term { $$.nd = mknode($1.nd, $3.nd, $2.name); }     
-         | term LOGICAL_AND term { $$.nd = mknode($1.nd, $3.nd, $2.name); }        
-         | term EQUAL_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }      
-         | term NOT_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
-         | term LESS_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
-         | term GREATER_THAN_OR_EQUAL term { $$.nd = mknode($1.nd, $3.nd, $2.name); }   
-         | term LESS_THAN term { $$.nd = mknode($1.nd, $3.nd, $2.name); }         
-         | term GREATER_THAN term  { $$.nd = mknode($1.nd, $3.nd, $2.name); }
+boolean_exp: term LOGICAL_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }    
+         | term LOGICAL_AND term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }     
+         | term EQUAL_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }   
+         | term NOT_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
+         | term LESS_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
+         | term GREATER_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
+         | term LESS_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }      
+         | term GREATER_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
         ;       
-if_stmt: IF { add('K'); } boolean_exp block_stmt if_stmt1  { cond_if = mknode($3.nd,$4.nd,"IF-PART"); }
+if_stmt : IF { add('K'); } boolean_exp block_stmt  { $$.nd = mknode($3.nd, $4.nd, "IF"); }
+        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } if_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART"); $$.nd = mknode(cond_if, $7.nd, "IF-ELSE-IF"); }
+        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } block_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART");  $$.nd = mknode(cond_if, $7.nd, "IF-ELSE"); }
         ;
-if_stmt1 : { $$.nd = cond_if; }
-        | ELSE { add('K'); } if_stmt  { $$.nd = mknode(cond_if, $3.nd, "IF-ELSE-IF"); }
-        | ELSE { add('K'); } block_stmt  { $$.nd = mknode(cond_if, $3.nd, "IF-ELSE"); }
-        ;
-
-
-
 
 for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.nd, "FOR"); }
             ;
@@ -219,20 +227,26 @@ println_stmt : PRINTLN LPAREN IDENTIFIER { check_declaration($1.name); } RPAREN 
 
 type : INT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
      | STRING_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
-     | BOOL_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
+     | BOOL_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }
+     | FLOAT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }
 
 literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                        
         | STRING {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                      
         | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                        
         | BOOLEAN {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                   
         ;
+
+number : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "int"); }    
+         | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "float");}    
+         ;
+
 %%
 
 int main() {
     extern FILE *yyin, *yyout;
    
     yyparse();
-    printf("\n\n \t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
+    printf("\n\n\t\t\t\t\t\t\t\t PHASE 1: LEXICAL ANALYSIS \n\n");
 	printf("\nSYMBOL   DATATYPE   TYPE   LINE NUMBER \n");
 	printf("_______________________________________\n\n");
 	int i=0;
@@ -244,8 +258,14 @@ int main() {
 		free(symbol_table[i].type);
 	}
 	printf("\n\n");
+
+    printf("\t\t\t\t\t\t\t\t PHASE 2: SYNTAX ANALYSIS \n\n");
     if(success)
-        printf("Parsing Successful\n");
+    printf("Parsing Successful\n");
+    printf("PARSE TREE");
+    printf("\n\n");
+	printBT(head);
+    printf("\n\n");
     printf("\t\t\t\t\t\t\t\t PHASE 3: SEMANTIC ANALYSIS \n\n");
 	if(sem_errors>0) {
 		printf("Semantic analysis completed with %d errors\n", sem_errors);
@@ -267,12 +287,18 @@ void check_declaration(char *c) {
     }
 }
 
+char *get_type(char *var) { 
+    for(int i=0; i<count; i++) {  
+        if(!strcmp(symbol_table[i].id_name, var)) {   
+            return symbol_table[i].data_type;  
+        }
+    }
+}
+
 int search(char *type_n) { 
     int i; 
-    
     for(i=count-1; i>=0; i--) {
         if(strcmp(symbol_table[i].id_name, type_n)==0) {  
-            
             return -1;
             break;  
         }
@@ -299,20 +325,22 @@ void add(char c) {
         symbol_table[count].line_no=yylineno;
         symbol_table[count].type=strdup("Keyword\t");   
         count++;  
-        }  else if(c == 'V') {
-        
+        }  
+        else if(c == 'V') {
         symbol_table[count].id_name=strdup(r);
         symbol_table[count].data_type=strdup(type_n);
         symbol_table[count].line_no=lno;
         symbol_table[count].type=strdup("Variable");   
         count++;  
-        }  else if(c == 'C') {
+        }
+        else if(c == 'C') {
         symbol_table[count].id_name=strdup(yytext);
         symbol_table[count].data_type=strdup("CONST");
         symbol_table[count].line_no=yylineno;
         symbol_table[count].type=strdup("Constant");   
         count++;  
-        }  else if(c == 'F') {
+        }
+        else if(c == 'F') {
         symbol_table[count].id_name=strdup(yytext);
         symbol_table[count].data_type=strdup(type_n);
         symbol_table[count].line_no=yylineno;
@@ -321,23 +349,11 @@ void add(char c) {
         }
     }
     else if(c == 'V' && q) {
-        sprintf(errors[sem_errors], "Line %d: Multiple declarations of \"%s\" not allowed!\n", countn+1, yytext );
+        sprintf(errors[sem_errors], "Line %d: Multiple declarations of \"%s\" not allowed!\n", countn, r );
 		sem_errors++;
     }
 }
-int check_types(char *type1, char *type2) { 
-    // declaration with no init 
-    if(!strcmp(type2, "null")) return -1; 
-    // both datatypes are same 
-    if(!strcmp(type1, type2)) return 0; 
-    // both datatypes are different 
-    if(!strcmp(type1, "int") && !strcmp(type2, "float")) return 1;
-    if(!strcmp(type1, "float") && !strcmp(type2, "int")) return 2;
-    if(!strcmp(type1, "int") && !strcmp(type2, "char")) return 3;
-    if(!strcmp(type1, "char") && !strcmp(type2, "int")) return 4;
-    if(!strcmp(type1, "float") && !strcmp(type2, "char")) return 5;
-    if(!strcmp(type1, "char") && !strcmp(type2, "float")) return 6;
-}
+
 void insert_type() {
     printf("%s\n",yytext);
 	strcpy(type_n, s);

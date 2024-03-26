@@ -2,13 +2,11 @@ package main
 
 func main(){
     var a int
-    var b int
-    b = 0
-    a = b + 1
+    var b float
+    b =  1.1
+    a =  1 + a
     if a < 1 {
         b++
-    
-    return
     }
 
 }

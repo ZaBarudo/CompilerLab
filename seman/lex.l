@@ -15,7 +15,7 @@ INTEGER     [0-9]{DIGIT}*
 STRING      \`[^\`]*\`|\"[^\"]*\"
 FLOAT           {DIGIT}+"."{DIGIT}+
 BOOLEAN         true|false
-COMMENT      \/\/.*\n
+COMMENT      \/\/.*
 MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 
 
@@ -76,6 +76,7 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
 "int"           { strcpy(yylval.nd_obj.name,(yytext)); return INT_TYPE; }
 "bool"          { strcpy(yylval.nd_obj.name,(yytext)); return BOOL_TYPE; }
 "string"        { strcpy(yylval.nd_obj.name,(yytext)); return STRING_TYPE; }
+"float"        { strcpy(yylval.nd_obj.name,(yytext)); return FLOAT_TYPE; }
 "import"        { strcpy(yylval.nd_obj.name,(yytext)); return IMPORT; }
 "func"          { strcpy(yylval.nd_obj.name,(yytext)); return FUNCTION; }
 "package"       { strcpy(yylval.nd_obj.name,(yytext)); return PACKAGE; }
@@ -112,18 +113,19 @@ MLCOMMENT    "/*"([^*]|\*+[^*/])*\*+"/"
                         printf("%s: Identifier is too long\n",yytext);
                     };
                 }
-
+{FLOAT}         { strcpy(yylval.nd_obj.name,(yytext)); return FLOAT; }
 {INTEGER}       { strcpy(yylval.nd_obj.name,(yytext)); return INTEGER; }
 {STRING}        { strcpy(yylval.nd_obj.name,(yytext)); return STRING; }
-{FLOAT}         { strcpy(yylval.nd_obj.name,(yytext)); return FLOAT; }
+
 {COMMENT}       { strcpy(yylval.nd_obj.name,(yytext)); return COMMENT; }
 {MLCOMMENT}     { strcpy(yylval.nd_obj.name,(yytext)); return MULTI_LINE_COMMENT; }
-[^\t\n\f\r\040] { printf("Error: Illegal character - %s\n", yytext); }
-\"[^\"\n]*$ { printf("Error: Unterminated string - %s\n", yytext); }
+\n              { countn++; }
+[ \t\r]         { ; } /* Skip whitespace and newlines */
+[^\t\f\r\040] { printf("Error: Illegal character - %s\n", yytext); }
+\"[^\"]*$ { printf("Error: Unterminated string - %s\n", yytext); }
 
 
-\n              { yylineno++; }
-[ \t\n\r]         { ; } /* Skip whitespace and newlines */
+
 %%
 
 int yywrap() {
