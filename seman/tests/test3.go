@@ -1,12 +1,15 @@
 package main
 
 func main() {
-    
-    var b int = 20
-    var a bool = true
-    var c string = "hi"
-    var d int
-    resultl = a + b
-    println("Result:")
+    //note: assignment and declaration cannot happen on same line of code
+    var b int 
+    b = 20
+    var a int
+    a = 10
+    var a int
+    a = 5
+    resultl = a+b
     println(resultl)
+
+    
 }

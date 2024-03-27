@@ -1,8 +1,10 @@
 package main
 
 func main() {
-    var a int = 10
-    var b int = 20
+    var a int
+    
+    a = 10
+    b = 20
     if a < b {
         println("a is less than b")
     } else {

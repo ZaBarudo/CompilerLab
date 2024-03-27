@@ -1,26 +1,27 @@
 package main
 
 func main() {
-    var b = 5
-	var a int = 10
-	var a int = 10
+    var b int 
+    b = 5
+	var a int 
+    a = 10
+	
     var result int
-    var a int
     result = a + b
-    println("Addition:")
-    
-    result = a + (a - b) + (1)
-    println("Subtraction:") 
+    println("Addition: ")
+    println(result)
+    result = a - b
+    println("Subtraction: ") 
+    println(result)
     result = a * b
-    println("Multiplication:") 
+    println("Multiplication: ") 
+    println(result)
     result = a / b
-    println("Division:") 
+    println("Division: ") 
+    println(result)
     for i = 0; i < 5; i++ {
-        println("Iteration:") 
-    }
-    
-    if a<(1+2) {
-        
+        println("Iteration ") 
+        println(i)
     }
 
 }

@@ -18,7 +18,7 @@
     void insert_type();
     int search(char *);
     void insert_type();
-    void check_declaration(char *);
+    int check_declaration(char *);
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
     char *get_type(char *var);
@@ -67,7 +67,7 @@
 
 %type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt  for_stmt for_clause println_stmt thing return_ 
+%type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt thing return_ 
 %type <nd_obj2> number expression binary_op term
 
 %%
@@ -92,7 +92,7 @@ thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.n
       | literal {$$.nd = $1.nd;}
       ;
 
-term: IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name); strcpy($$.type, get_type($1.name));}
+term: IDENTIFIER { if(check_declaration($1.name)){ $$.nd = mknode(NULL, NULL, $1.name); strcpy($$.type, get_type($1.name));}}
     | number {$$.nd = $1.nd; strcpy($$.type, $1.type);}
     | LPAREN expression RPAREN {$$.nd = $2.nd; strcpy($$.type, $2.type);}
     ;
@@ -150,8 +150,9 @@ inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { $1.nd = mk
 
 /* https://golang.org/ref/spec#Operands
  The blank identifier may appear as an operand only on the left-hand side of an assignment. */ 
-assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression { 
-                if(strcmp(get_type($1.name), $4.type)) {
+assignment : IDENTIFIER { } ASSIGN expression { 
+                if(check_declaration($1.name)){
+                    if(strcmp(get_type($1.name), $4.type)) {
                     
                     sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
                     sem_errors++;
@@ -159,9 +160,12 @@ assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression {
                     
                     $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, "="); 
                     }
+                }
+                
             }
-           | IDENTIFIER { check_declaration($1.name); } assign_op expression { 
-                if(strcmp(get_type($1.name), $4.type)) {
+           | IDENTIFIER { } assign_op expression { 
+                if(check_declaration($1.name)){
+                    if(strcmp(get_type($1.name), $4.type)) {
                     
                     sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
                     sem_errors++;
@@ -169,6 +173,8 @@ assignment : IDENTIFIER { check_declaration($1.name); } ASSIGN expression {
                     
                     $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, $1.name); 
                     }
+                }
+                
             }
            ;
 
@@ -211,9 +217,12 @@ boolean_exp: term LOGICAL_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[
          | term LESS_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }      
          | term GREATER_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
         ;       
-if_stmt : IF { add('K'); } boolean_exp block_stmt  { $$.nd = mknode($3.nd, $4.nd, "IF"); }
-        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } if_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART"); $$.nd = mknode(cond_if, $7.nd, "IF-ELSE-IF"); }
-        | IF { add('K'); } boolean_exp block_stmt ELSE { add('K'); } block_stmt  { struct node* cond_if = mknode($3.nd, $4.nd, "IF-PART");  $$.nd = mknode(cond_if, $7.nd, "IF-ELSE"); }
+if_stmt : IF { add('K'); } boolean_exp block_stmt if_stmt1 { cond_if = mknode($3.nd, $4.nd, "IF-PART"); idnode = $$.nd; }
+        ;
+
+if_stmt1 :  { idnode = cond_if; }
+        |   ELSE { add('K'); } if_stmt  { idnode = mknode(cond_if, $3.nd, "IF-ELSE-IF"); }
+        |   ELSE { add('K'); } block_stmt  { idnode = mknode(cond_if, $3.nd, "IF-ELSE"); }
         ;
 
 for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.nd, "FOR"); }
@@ -279,12 +288,14 @@ int main() {
     return 0;
 }
 
-void check_declaration(char *c) {
+int check_declaration(char *c) {
     q = search(c);
     if(!q) {
         sprintf(errors[sem_errors], "Line %d: Variable \"%s\" not declared before usage!\n", countn+1, c);
 		sem_errors++;
+        return 0;
     }
+    return 1;
 }
 
 char *get_type(char *var) { 
