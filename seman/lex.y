@@ -22,6 +22,7 @@
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token);
     char *get_type(char *var);
+    char *get_actual_type(char *var);
     void printBT(struct node*);
 
     struct dataType {
@@ -32,7 +33,8 @@
     } symbol_table[40];
     int count=0;
     int q;
-    char type_n [10];
+    char type_n[10];
+    char type_temp[10];
     extern int countn;
     int sem_errors=0;
     char errors[10][100];
@@ -67,7 +69,7 @@
 
 %type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt thing return_ 
+%type <nd_obj> boolean_exp if_stmt if_stmt1 for_stmt for_clause println_stmt print_param thing return_ 
 %type <nd_obj2> number expression binary_op term
 
 %%
@@ -201,7 +203,7 @@ mul_op_eq : MUL_ASSIGN {$$.nd = mknode(NULL, NULL, $1.name);}
 
 return_stmt : RETURN { add('K'); } return_ { $1.nd = mknode(NULL, NULL, "return"); $$.nd = mknode($1.nd, $3.nd, "RETURN"); }
             ;
-return_ : thing { $$.nd = $1.nd; }
+return_ : thing { strcpy(type_temp, get_actual_type($1.name)); if(!strcmp(type_temp, "Variable") || !strcmp(type_temp, "Constant")){$$.nd = $1.nd; } else {sprintf(errors[sem_errors], "Line %d: Invalid return\n", countn+1);sem_errors++;}}
         | { $$.nd = NULL ;}
 
 block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
@@ -217,12 +219,12 @@ boolean_exp: term LOGICAL_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[
          | term LESS_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }      
          | term GREATER_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }
         ;       
-if_stmt : IF { add('K'); } boolean_exp block_stmt if_stmt1 { cond_if = mknode($3.nd, $4.nd, "IF-PART"); idnode = $$.nd; }
+if_stmt : IF { add('K'); } boolean_exp block_stmt if_stmt1 { cond_if = mknode($3.nd, $4.nd, "IF-STUFF"); $$.nd = mknode(cond_if, $5.nd, "IF-PART"); }
         ;
 
-if_stmt1 :  { idnode = cond_if; }
-        |   ELSE { add('K'); } if_stmt  { idnode = mknode(cond_if, $3.nd, "IF-ELSE-IF"); }
-        |   ELSE { add('K'); } block_stmt  { idnode = mknode(cond_if, $3.nd, "IF-ELSE"); }
+if_stmt1 :  { $$.nd = NULL; }
+        |   ELSE { add('K'); } if_stmt  { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "IF-ELSE-IF"); }
+        |   ELSE { add('K'); } block_stmt  { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "IF-ELSE"); }
         ;
 
 for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.nd, "FOR"); }
@@ -231,8 +233,11 @@ for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.n
 for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
            ;
 
-println_stmt : PRINTLN LPAREN IDENTIFIER { check_declaration($1.name); } RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name); $$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
-             | PRINTLN LPAREN STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $3.nd = mknode(NULL, NULL, $3.name);$$.nd = mknode($1.nd, $3.nd, "PRINTLN"); }
+println_stmt : PRINTLN { add('K'); } LPAREN print_param { $1.nd = mknode(NULL, NULL, "println"); $$.nd = mknode($1.nd, $4.nd, "PRINTLN"); }
+
+print_param : STRING RPAREN { $1.nd = mknode(NULL, NULL, "println"); $$.nd = mknode(NULL, NULL, $1.name); }
+            | expression RPAREN   { $1.nd = mknode(NULL, NULL, "println"); $$.nd = mknode(NULL, NULL, $1.name); }
+            ;
 
 type : INT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
      | STRING_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name); }  
@@ -246,7 +251,8 @@ literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}
         ;
 
 number : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "int"); }    
-         | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "float");}    
+         | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "float");} 
+         | BOOLEAN  {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "bool");} 
          ;
 
 %%
@@ -302,6 +308,14 @@ char *get_type(char *var) {
     for(int i=0; i<count; i++) {  
         if(!strcmp(symbol_table[i].id_name, var)) {   
             return symbol_table[i].data_type;  
+        }
+    }
+}
+
+char *get_actual_type(char *var) { 
+    for(int i=0; i<count; i++) {  
+        if(!strcmp(symbol_table[i].id_name, var)) {   
+            return symbol_table[i].type;  
         }
     }
 }
