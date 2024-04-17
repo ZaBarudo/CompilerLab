@@ -49,6 +49,9 @@
     int temp_var=0; 
     int label=0; 
     int is_for=0;
+    char icg[50][100];
+	char buff[100];
+	int ic_idx=0;
     
 %}
 
@@ -66,7 +69,8 @@
         char name[100];
         struct node* nd;
         char if_body[5];
-        char else_body[5];  
+        char else_body[5]; 
+        char after_else_body[5];
     } nd_obj3;
 }
 
@@ -79,9 +83,9 @@
 
 %type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
-%type <nd_obj> if_stmt if_stmt1 for_stmt for_clause println_stmt print_param thing return_ relop
+%type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
 %type <nd_obj2> number expression binary_op term
-%type <nd_obj3> boolean_exp
+%type <nd_obj3> boolean_exp for_clause for_stmt
 
 %%
 
@@ -105,37 +109,49 @@ thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.n
       | literal {$$.nd = $1.nd;}
       ;
 
-term: IDENTIFIER { if(check_declaration($1.name)){ $$.nd = mknode(NULL, NULL, $1.name); strcpy($$.type, get_type($1.name));}}
-    | number {$$.nd = $1.nd; strcpy($$.type, $1.type);}
-    | LPAREN expression RPAREN {$$.nd = $2.nd; strcpy($$.type, $2.type);
+term: IDENTIFIER { if(check_declaration($1.name)){  strcpy($$.name,$1.name); $$.nd = mknode(NULL, NULL, $1.name); strcpy($$.type, get_type($1.name));}}
+    | number { strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}
+    | LPAREN expression RPAREN { strcpy($$.name,$2.name); $$.nd = $2.nd; strcpy($$.type, $2.type);
     }
     ;
 
-expression : term {$$.nd = $1.nd; strcpy($$.type, $1.type);}     
-           | binary_op {$$.nd = $1.nd; strcpy($$.type, $1.type);}       
+expression : term { strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}     
+           | binary_op { strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}       
            ;
 
-binary_op : expression LOGICAL_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
-         | expression LOGICAL_AND term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }               
-         | expression EQUAL_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }             
-         | expression NOT_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
-         | expression LESS_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
-         | expression GREATER_THAN_OR_EQUAL term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
-         | expression LESS_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression GREATER_THAN term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression PLUS term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }               
-         | expression MINUS term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression BITWISE_OR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression BITWISE_XOR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression TIMES term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression DIVIDE term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression MODULO term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression RIGHT_SHIFT term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }        
-         | expression LEFT_SHIFT term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }         
-         | expression BITWISE_AND term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }                
-         | expression BIT_CLEAR term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }          
-         ;
-
+binary_op : expression op term { 
+        if(strcmp($1.type, $3.type)){
+            sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);
+            sem_errors++;
+        } else {
+            $$.nd = mknode($1.nd, $3.nd, $2.name);
+        } 
+        sprintf($$.name, "t%d", temp_var);
+        temp_var++;
+        sprintf(icg[ic_idx++], "%s = %s %s %s\n",  $$.name, $1.name, $2.name, $3.name);
+    }          
+    ;
+        
+op : LOGICAL_OR {$$.nd = mknode(NULL, NULL, $1.name);}
+    | LOGICAL_AND {$$.nd = mknode(NULL, NULL, $1.name);}
+    | EQUAL_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+    | NOT_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+    | LESS_THAN_OR_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+    | GREATER_THAN_OR_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+    | LESS_THAN {$$.nd = mknode(NULL, NULL, $1.name);}
+    | GREATER_THAN {$$.nd = mknode(NULL, NULL, $1.name);}
+    | PLUS {$$.nd = mknode(NULL, NULL, $1.name);}
+    | MINUS {$$.nd = mknode(NULL, NULL, $1.name);}
+    | BITWISE_OR {$$.nd = mknode(NULL, NULL, $1.name);}
+    | BITWISE_XOR {$$.nd = mknode(NULL, NULL, $1.name);}
+    | TIMES {$$.nd = mknode(NULL, NULL, $1.name);}
+    | DIVIDE {$$.nd = mknode(NULL, NULL, $1.name);}
+    | MODULO {$$.nd = mknode(NULL, NULL, $1.name);}
+    | RIGHT_SHIFT {$$.nd = mknode(NULL, NULL, $1.name);}
+    | LEFT_SHIFT {$$.nd = mknode(NULL, NULL, $1.name);}
+    | BITWISE_AND {$$.nd = mknode(NULL, NULL, $1.name);}
+    | BIT_CLEAR {$$.nd = mknode(NULL, NULL, $1.name);}
+;
 
 statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}   
           | simple_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}  			
@@ -152,14 +168,34 @@ statement : declaration statement { $$.nd = mknode($1.nd, $2.nd, "statement") ;}
 
 
 
-simple_stmt :inc_dec_stmt { $$.nd = $1.nd; }
+simple_stmt : inc_dec_stmt { $$.nd = $1.nd; }
             | assignment { $$.nd = $1.nd; }
             ;
 
 
 
-inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); }
-             | IDENTIFIER { check_declaration($1.name); } DECREMENT { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "DECREMENT"); }
+inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { 
+                            if(strcmp(get_type($1.name),"int")){
+                                sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                                sem_errors++;
+                            } else {
+                                $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); 
+                                // sprintf(buff, "t%d = %s + 1\n%s = t%d\n", temp_var, $1.name, $1.name, temp_var++); 
+                                sprintf(icg[ic_idx++], "t%d = %s + 1\n", temp_var, $1.name);
+                                sprintf(icg[ic_idx++], "%s = t%d\n",$1.name, temp_var++);
+                            }
+                            }
+             | IDENTIFIER { 
+                            if(strcmp(get_type($1.name),"int")){
+                                sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                                sem_errors++;
+                            } else {
+                                $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, NULL, "INCREMENT"); 
+                                // sprintf(buff, "t%d = %s - 1\n%s = t%d\n", temp_var, $1.name, $1.name, temp_var++); 
+                                sprintf(icg[ic_idx++], "t%d = %s - 1\n", temp_var, $1.name);
+                                sprintf(icg[ic_idx++], "%s = t%d\n",$1.name, temp_var++);
+                            }
+                        }
              ;
 
 /* https://golang.org/ref/spec#Operands
@@ -167,29 +203,29 @@ inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT { $1.nd = mk
 assignment : IDENTIFIER { } ASSIGN expression { 
                 if(check_declaration($1.name)){
                     if(strcmp(get_type($1.name), $4.type)) {
-                    
-                    sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
-                    sem_errors++;
-                } else {
-                    
-                    $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, "="); 
+                        sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                        sem_errors++;
+                    } else {
+                        $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, "="); 
+                        sprintf(icg[ic_idx++], "%s = %s\n", $1.name, $4.name);
                     }
                 }
+                
                 
             }
            | IDENTIFIER { } assign_op expression { 
                 if(check_declaration($1.name)){
                     if(strcmp(get_type($1.name), $4.type)) {
-                    
-                    sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
-                    sem_errors++;
-                } else {
-                    
-                    $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, $1.name); 
+                        sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                        sem_errors++;
+                    } else {
+                        $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $4.nd, $1.name); 
+                        sprintf(icg[ic_idx++], "%s = %s\n", $1.name, $4.name);
                     }
                 }
                 
             }
+
            ;
 
 assign_op : add_op_eq {$$.nd = $1.nd;}
@@ -222,25 +258,56 @@ block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
 
-boolean_exp: term relop term { if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} else {$$.nd = mknode($1.nd, $3.nd, $2.name);} }    
+boolean_exp: term relop term { 
+        if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} 
+        else {$$.nd = mknode($1.nd, $3.nd, $2.name);} 
+        if(is_for) {
+            sprintf($$.if_body, "L%d", label++);
+            sprintf(icg[ic_idx++], "\nLABEL %s:\n", $$.if_body);
+            sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);
+            sprintf($$.else_body, "L%d", label++);
+        } else {
+            sprintf(icg[ic_idx++], "\nif (%s %s %s) GOTO L%d else GOTO L%d\n", $1.name, $2.name, $3.name, label, label+1);
+            sprintf($$.if_body, "L%d", label++);
+            sprintf($$.else_body, "L%d", label++);
+            sprintf($$.after_else_body, "L%d", label++);
+        }
+    }    
          ;      
 
-relop: LOGICAL_OR | LOGICAL_AND | EQUAL_EQUAL | NOT_EQUAL | LESS_THAN_OR_EQUAL | GREATER_THAN_OR_EQUAL | LESS_THAN | GREATER_THAN {$$.nd = mknode(NULL, NULL, $1.name);}
+relop: LOGICAL_OR {$$.nd = mknode(NULL, NULL, $1.name);}
+| LOGICAL_AND {$$.nd = mknode(NULL, NULL, $1.name);}
+| EQUAL_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+| NOT_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+| LESS_THAN_OR_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+| GREATER_THAN_OR_EQUAL {$$.nd = mknode(NULL, NULL, $1.name);}
+| LESS_THAN {$$.nd = mknode(NULL, NULL, $1.name);}
+| GREATER_THAN {$$.nd = mknode(NULL, NULL, $1.name);}
     ;
 
-if_stmt : IF { add('K'); } boolean_exp block_stmt if_stmt1 { cond_if = mknode($3.nd, $4.nd, "IF-STUFF"); $$.nd = mknode(cond_if, $5.nd, "IF-PART"); }
+if_stmt : IF { add('K'); is_for = 0; } boolean_exp { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.if_body); } block_stmt { sprintf(icg[ic_idx++], "GOTO %s\n\n", $3.after_else_body); sprintf(icg[ic_idx++], "LABEL %s:\n", $3.else_body); } if_stmt1 { sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.after_else_body); cond_if = mknode($3.nd, $5.nd, "IF-STUFF"); $$.nd = mknode(cond_if, $7.nd, "IF-PART"); }
         ;
-
+    
 if_stmt1 :  { $$.nd = NULL; }
         |   ELSE { add('K'); } if_stmt  { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "IF-ELSE-IF"); }
         |   ELSE { add('K'); } block_stmt  { $1.nd = mknode(NULL, NULL, $1.name); $$.nd = mknode($1.nd, $3.nd, "IF-ELSE"); }
         ;
 
-for_stmt : FOR { add('K'); } for_clause block_stmt  { $$.nd = mknode($3.nd, $4.nd, "FOR"); }
-            ;
+for_stmt : FOR { add('K');  is_for = 1; } for_clause block_stmt  { 
+        $$.nd = mknode($3.nd, $4.nd, "FOR"); 
+        sprintf(icg[ic_idx++], "JUMP to %s\n", $3.if_body);
+        sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.else_body);
+    }
+        ;
 
-for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE"); }
-           ;
+for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {
+        struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool");  
+        $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE");
+        strcpy($$.if_body, $3.if_body);
+        strcpy($$.else_body, $3.else_body);
+        // sprintf(icg[ic_idx++], "%s", buff); 
+    }
+        ;
 
 println_stmt : PRINTLN { add('K'); } LPAREN print_param { $1.nd = mknode(NULL, NULL, "println"); $$.nd = mknode($1.nd, $4.nd, "PRINTLN"); }
 
@@ -259,9 +326,9 @@ literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}
         | BOOLEAN {add('C'); $$.nd = mknode(NULL, NULL, $1.name);}                   
         ;
 
-number : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "int"); }    
-         | FLOAT {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "float");} 
-         | BOOLEAN  {add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "bool");} 
+number : INTEGER { strcpy($$.name, $1.name); add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "int"); }    
+         | FLOAT { strcpy($$.name, $1.name); add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "float");} 
+         | BOOLEAN  { strcpy($$.name, $1.name); add('C'); $$.nd = mknode(NULL, NULL, $1.name); sprintf($$.type, "bool");} 
          ;
 
 %%
@@ -298,6 +365,12 @@ int main() {
 		}
 	} else {
 		printf("Semantic analysis completed with no errors");
+	}
+	printf("\n\n");
+    
+	printf("\t\t\t\t\t\t\t   PHASE 4: INTERMEDIATE CODE GENERATION \n\n");
+	for(int i=0; i<ic_idx; i++){
+		printf("%s", icg[i]);
 	}
 	printf("\n\n");
     return 0;
