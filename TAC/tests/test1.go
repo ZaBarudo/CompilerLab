@@ -8,13 +8,8 @@ func main(){
     b =  1 * 2 * 3
     b = 1
     a =  1 + a
-    c = false+true
-    if a < b {
-        d++
-        a++
-    } else {
-        a++
-        
+    for a = 1; a < b; a++ {
+        b++
     }
     
     d++
