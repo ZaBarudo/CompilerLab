@@ -9,7 +9,7 @@ func main(){
     b = 1
     a =  1 + a
     
-    if a < b && b < c  {
+    if a < b || b < a  {
         d++
         a++
     } else {
