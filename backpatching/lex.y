@@ -304,10 +304,17 @@ relop_exp: term relop term {
         else {
             $$.nd = mknode($1.nd, $3.nd, $2.name, 0);
             if(is_for) {
-                sprintf($$.if_body, "L%d", label++);
-                sprintf(icg[ic_idx++], "\nLABEL %s:\n", $$.if_body);
-                sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);
-                sprintf($$.else_body, "L%d", label++);
+                // sprintf($$.if_body, "L%d", label++);
+                // sprintf(icg[ic_idx++], "\nLABEL %s:\n", $$.if_body);
+                // sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);
+                // sprintf($$.else_body, "L%d", label++);
+                char ifstt[400];
+                sprintf(ifstt, "if %s %s %s ", $1.name, $2.name, $3.name);
+                strcat(icg[ic_idx++], ifstt);
+                $$.tlistsize = 0;
+                $$.flistsize = 0;
+                $$.tlist[$$.tlistsize++] = ic_idx-1;
+                $$.flist[$$.flistsize++] = ic_idx++;
             } else {
                 char ifstt[400];
                 sprintf(ifstt, "if %s %s %s ", $1.name, $2.name, $3.name);
@@ -436,17 +443,27 @@ if_stmt1 :  { $$.nd = NULL; }
 
 for_stmt : FOR { add('K');  is_for = 1; } for_clause block_stmt  { 
         $$.nd = mknode($3.nd, $4.nd, "FOR", $$.value); 
-        sprintf(icg[ic_idx++], "JUMP to %s\n", $3.if_body);
-        sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.else_body);
+        sprintf(icg[ic_idx++], "JUMP to L%d\n", label-2);
+        sprintf(icg[ic_idx++], "\nLABEL L%d:\n", label++);
     }
         ;
 
-for_clause : assignment SEMICOLON boolean_exp SEMICOLON simple_stmt  {
-        struct node* ass_bool = mknode($1.nd, $3.nd, "ass-bool", $$.value);  
-        $$.nd = mknode(ass_bool, $5.nd, "FOR-CLAUSE", $$.value);
-        strcpy($$.if_body, $3.if_body);
-        strcpy($$.else_body, $3.else_body);
-        // sprintf(icg[ic_idx++], "%s", buff); 
+for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);} boolean_exp SEMICOLON simple_stmt  {
+        struct node* ass_bool = mknode($1.nd, $4.nd, "ass-bool", $$.value);  
+        $$.nd = mknode(ass_bool, $6.nd, "FOR-CLAUSE", $$.value);
+        // strcpy($$.if_body, $3.if_body);
+        // strcpy($$.else_body, $3.else_body);
+        sprintf(icg[ic_idx++], "LABEL L%d:\n", label++); 
+        for(int i=0;i<$4.tlistsize;i++){
+                char gotha[20];
+                sprintf(gotha, "GOTO L%d\n", label-1);
+                strcat(icg[$4.tlist[i]], gotha);
+            }
+        for(int i=0;i<$4.flistsize;i++){
+                char gotha[20];
+                sprintf(gotha, "GOTO L%d\n", label);
+                sprintf(icg[$4.flist[i]],"%s", gotha);
+            } 
     }
         ;
 

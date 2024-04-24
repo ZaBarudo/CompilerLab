@@ -17,7 +17,10 @@ func main(){
         
     }
     
-    d++
+    for a=0; a<b && b<a; a++ {
+        d++
+        d = d+2
+    }
     
     return c
 }
