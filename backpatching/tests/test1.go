@@ -1,5 +1,10 @@
 package main
 
+func p(){
+    var e float
+    p()
+}
+
 func main(){
     var a int
     var b int
@@ -21,7 +26,7 @@ func main(){
         d++
         d = d+2
     }
-    
+    p()
     return c
 }
 

@@ -100,7 +100,7 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT FLOAT_TYPE
 
-%type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
+%type <nd_obj> program PackageClause declaration declaration1 function_declaration Functions func_call_stmt type literal
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
 %type <nd_obj2> number expression binary_op term
@@ -110,7 +110,7 @@
 %%
 
 
-program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "program", $$.value); head = $$.nd; } 
+program: PackageClause Functions { $$.nd = mknode($1.nd, $2.nd, "program", $$.value); head = $$.nd; } 
 ;
 
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name, $$.value); $3.nd = mknode(NULL, NULL, $3.name, $$.value); $$.nd = mknode($1.nd, $3.nd, "package", $$.value); }
@@ -122,7 +122,15 @@ declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; }
 declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }                                                
 ;
 
-function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $6.nd, "function", $$.value); }
+Functions : function_declaration Functions { $$.nd = mknode($1.nd, $2.nd, " ", $$.value); }
+          | {$$.nd = NULL; }
+          ;
+
+identifier_list: IDENTIFIER COMMA identifier_list 
+               | 
+               ;
+
+function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN identifier_list RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $7.nd, "function", $$.value); }
                      ;
 
 thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name, $$.value);}
@@ -196,10 +204,11 @@ statement : declaration statement { $$.value = $1.value; $$.nd = mknode($1.nd, $
           | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement", $$.value) ;}  						
           | println_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement", $$.value) ;}  
           | COMMENT statement { $$.nd = mknode(NULL, $2.nd, "COMMENT", $$.value) ;}  
+          | func_call_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement", $$.value); }
           | { $$.nd = NULL ;}  
           ;
 
-
+func_call_stmt : IDENTIFIER { check_declaration($1.name); } LPAREN identifier_list RPAREN { $$.nd = mknode(NULL,NULL,"function call",$$.value); }
 
 simple_stmt : inc_dec_stmt { $$.nd = $1.nd; $$.value = $1.value; }
             | assignment { $$.nd = $1.nd; $$.value = $1.value;}
@@ -628,7 +637,7 @@ void add(char c) {
         }
         else if(c == 'F') {
         symbol_table[count].id_name=strdup(yytext);
-        symbol_table[count].data_type=strdup(type_n);
+        symbol_table[count].data_type="";
         symbol_table[count].line_no=yylineno;
         symbol_table[count].type=strdup("Function");   
         count++;  
