@@ -100,7 +100,7 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT FLOAT_TYPE
 
-%type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal
+%type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal TopLevelDecl TopLevelDeclList
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
 %type <nd_obj2> number expression binary_op term
@@ -110,11 +110,29 @@
 %%
 
 
-program: PackageClause function_declaration { $$.nd = mknode($1.nd, $2.nd, "program", $$.value); head = $$.nd; } 
+program: PackageClause TopLevelDeclList { $$.nd = mknode($1.nd, $2.nd, "program", $$.value); head = $$.nd; } 
 ;
 
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name, $$.value); $3.nd = mknode(NULL, NULL, $3.name, $$.value); $$.nd = mknode($1.nd, $3.nd, "package", $$.value); }
 ;
+TopLevelDeclList:
+    TopLevelDeclList TopLevelDecl  {
+        $$.nd = mknode($1.nd, $2.nd, "TopLevelDeclList", $$.value); // Combine AST nodes
+    }
+    | TopLevelDeclList SEMICOLON TopLevelDecl  {
+        $$.nd = mknode($1.nd, $3.nd, "TopLevelDeclList", $$.value); // Combine AST nodes
+    }
+    | TopLevelDecl  {
+        $$.nd = mknode($1.nd, NULL, "TopLevelDeclList", $$.value); // Single TopLevelDecl
+    };
+
+TopLevelDecl:
+    declaration {
+        $$.nd = mknode($1.nd, NULL, "declaration", $$.value); // Create node for declaration
+    }
+    | function_declaration {
+        $$.nd = mknode($1.nd, NULL, "function_declaration", $$.value); // Create node for function_declaration
+    };
 
 declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 { $3.nd = mknode(NULL, NULL, $3.name, $$.value);  $$.nd = mknode($3.nd, $5.nd, "declaration", $$.value); }
             ;
@@ -123,7 +141,7 @@ declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable", $$.value
 ;
 
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $6.nd, "function", $$.value); }
-                     ;
+               ;
 
 thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name, $$.value);}
       | literal {$$.nd = $1.nd;}
@@ -304,10 +322,6 @@ relop_exp: term relop term {
         else {
             $$.nd = mknode($1.nd, $3.nd, $2.name, 0);
             if(is_for) {
-                // sprintf($$.if_body, "L%d", label++);
-                // sprintf(icg[ic_idx++], "\nLABEL %s:\n", $$.if_body);
-                // sprintf(icg[ic_idx++], "\nif NOT (%s %s %s) GOTO L%d\n", $1.name, $2.name, $3.name, label);
-                // sprintf($$.else_body, "L%d", label++);
                 char ifstt[400];
                 sprintf(ifstt, "if %s %s %s ", $1.name, $2.name, $3.name);
                 strcat(icg[ic_idx++], ifstt);
@@ -451,8 +465,6 @@ for_stmt : FOR { add('K');  is_for = 1; } for_clause block_stmt  {
 for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);} boolean_exp SEMICOLON simple_stmt  {
         struct node* ass_bool = mknode($1.nd, $4.nd, "ass-bool", $$.value);  
         $$.nd = mknode(ass_bool, $6.nd, "FOR-CLAUSE", $$.value);
-        // strcpy($$.if_body, $3.if_body);
-        // strcpy($$.else_body, $3.else_body);
         sprintf(icg[ic_idx++], "LABEL L%d:\n", label++); 
         for(int i=0;i<$4.tlistsize;i++){
                 char gotha[20];
