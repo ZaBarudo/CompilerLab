@@ -101,6 +101,7 @@
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT FLOAT_TYPE
 
 %type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal TopLevelDecl TopLevelDeclList
+%type <nd_obj> parameters parameter_unit signature array_length array_type
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
 %type <nd_obj2> number expression binary_op term
@@ -137,11 +138,27 @@ TopLevelDecl:
 declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 { $3.nd = mknode(NULL, NULL, $3.name, $$.value);  $$.nd = mknode($3.nd, $5.nd, "declaration", $$.value); }
             ;
 
-declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }                                                
+declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }   
+            | array_type { $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }                                             
 ;
 
-function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $6.nd, "function", $$.value); }
+array_type : LSQPAREN array_length RSQPAREN type { $$.nd = mknode($2.nd, $4.nd, "array-type", $$.value);}
+            ;
+array_length : expression { $$.nd = mknode(NULL, $1.nd, "array-len", $$.value); }
+            ;
+
+function_declaration : FUNCTION IDENTIFIER { add('F'); } signature block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $5.nd, "function", $$.value); }
                ;
+signature : LPAREN parameters RPAREN type { $$.nd = mknode($2.nd, NULL, "signature", $$.value); }
+            | LPAREN RPAREN type { $$.nd = mknode(NULL, NULL, "signature", $$.value); }
+            | LPAREN parameters RPAREN { $$.nd = mknode($2.nd, NULL, "signature", $$.value); }
+            ;
+parameters : parameter_unit { $$.nd = mknode($1.nd, NULL, "parameters",$$.value); }
+            | parameter_unit COMMA parameters { $$.nd = mknode($1.nd, $3.nd, "parameters", $$.value); }
+            ;
+parameter_unit : IDENTIFIER type {$$.nd = mknode($1.nd, $2.nd, "parameter unit", $$.value);};
+
+
 
 thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name, $$.value);}
       | literal {$$.nd = $1.nd;}
@@ -489,6 +506,7 @@ type : INT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.na
      | STRING_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name, $$.value); }  
      | BOOL_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name, $$.value); }
      | FLOAT_TYPE { s = yytext; strcpy(type_n,s); $$.nd = mknode(NULL, NULL, $1.name, $$.value); }
+     ;
 
 literal : INTEGER {add('C'); $$.nd = mknode(NULL, NULL, $1.name, $$.value);}                        
         | STRING {add('C'); $$.nd = mknode(NULL, NULL, $1.name, $$.value);}                      

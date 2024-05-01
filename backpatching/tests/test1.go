@@ -1,11 +1,6 @@
 package main
 
-func add() {
-   var b int
-   b = 2*3
-}
-
-func main() {
-	var a int
+func main() int{
+   var a [10]int
 }
 
