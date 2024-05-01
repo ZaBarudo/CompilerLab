@@ -36,15 +36,16 @@
         int line_no;
         int value;
         int * arr;
-    } symbol_table[40];
+    } symbol_table[400];
     int count=0;
     int q;
-    char type_n[10];
-    char type_temp[10];
+    char type_n[100];
+    char type_temp[100];
     extern int countn;
     int sem_errors=0;
-    char errors[10][100];
+    char errors[100][100];
     char buff1[100], buff2[100]; // Used for printing array accesses in binary_ops in ICG
+    
     
     struct node *head;
     struct node { 
@@ -57,10 +58,10 @@
     int temp_var=0; 
     int label=0; 
     int is_for=0;
-    char icg[50][100];
-	char buff[100];
+    char icg[500][100];
+	char buff[1000];
 	int ic_idx=0;
-    char snum[5];
+    char snum[50];
     
 %}
 
@@ -81,14 +82,14 @@
     struct var_name3 {
         char name[100];
         struct node* nd;
-        char if_body[5];
-        char else_body[5]; 
-        char after_else_body[5];
+        char if_body[50];
+        char else_body[50]; 
+        char after_else_body[50];
         int value;
-        int tlist[10];
+        int tlist[100];
         int tlistsize;
         int flistsize;
-        int flist[10];
+        int flist[100];
         int index_in_icg;
     } nd_obj3;
 
@@ -108,7 +109,7 @@
 %type <nd_obj> parameters parameter_unit signature array_length array_type
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
-%type <nd_obj2> number expression binary_op term array_access function_call
+%type <nd_obj2> for_clause1 number expression binary_op term array_access function_call
 %type <nd_obj3> boolean_exp for_clause for_stmt relop_exp
 %type <nd_obj4> M
 
@@ -121,12 +122,12 @@ program: PackageClause TopLevelDeclList { $$.nd = mknode($1.nd, $2.nd, "program"
 PackageClause: PACKAGE { add('H'); } IDENTIFIER {$1.nd = mknode(NULL, NULL, $1.name, $$.value); $3.nd = mknode(NULL, NULL, $3.name, $$.value); $$.nd = mknode($1.nd, $3.nd, "package", $$.value); }
 ;
 TopLevelDeclList:
-    TopLevelDeclList TopLevelDecl  {
+    TopLevelDecl TopLevelDeclList   {
         $$.nd = mknode($1.nd, $2.nd, "TopLevelDeclList", $$.value); // Combine AST nodes
     }
-    | TopLevelDeclList SEMICOLON TopLevelDecl  {
-        $$.nd = mknode($1.nd, $3.nd, "TopLevelDeclList", $$.value); // Combine AST nodes
-    }
+    // | TopLevelDeclList SEMICOLON TopLevelDecl  {
+    //     $$.nd = mknode($1.nd, $3.nd, "TopLevelDeclList", $$.value); // Combine AST nodes
+    // }
     | TopLevelDecl  {
         $$.nd = mknode($1.nd, NULL, "TopLevelDeclList", $$.value); // Single TopLevelDecl
     };
@@ -201,7 +202,7 @@ signature : LPAREN parameters RPAREN type { $$.nd = mknode($2.nd, NULL, "signatu
 parameters : parameter_unit { $$.nd = mknode($1.nd, NULL, "parameters",$$.value); }
             | parameter_unit COMMA parameters { $$.nd = mknode($1.nd, $3.nd, "parameters", $$.value); }
             ;
-parameter_unit : IDENTIFIER type {$$.nd = mknode($1.nd, $2.nd, "parameter unit", $$.value);};
+parameter_unit : IDENTIFIER { r=strdup(yytext); lno = yylineno; } declaration1 {$1.nd = mknode(NULL, NULL, $1.name, 0); $$.nd = mknode($1.nd, $3.nd, "parameter unit", $$.value);} ;
 
 
 
@@ -214,6 +215,9 @@ term: IDENTIFIER { if(check_declaration($1.name)){
             strcpy($$.name,$1.name); 
             $$.nd = mknode(NULL, NULL, $1.name, $$.value); 
             strcpy($$.type, get_type($1.name));
+        } else {
+            sprintf(errors[sem_errors], "Line %d: Variable/Array not defined\n", countn+1);
+            sem_errors++;
         }
     }
     | number { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}
@@ -326,16 +330,16 @@ inc_dec_stmt : IDENTIFIER { check_declaration($1.name); } INCREMENT {
  The blank identifier may appear as an operand only on the left-hand side of an assignment. */ 
 assignment : IDENTIFIER { } ASSIGN expression { 
                 if(check_declaration($1.name)){
-                    if(strcmp(get_type($1.name), $4.type)) {
-                        sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
-                        sem_errors++;
-                    } else {
+                    // if(strcmp(get_type($1.name), $4.type)) {
+                    //     sprintf(errors[sem_errors], "Line %d: Type mismatch in assignment!\n", countn+1);
+                    //     sem_errors++;
+                    // } else {
                         $1.value = $4.value;
                         $$.value = $4.value;
                         add_val($1.name, $$.value);
                         $1.nd = mknode(NULL, NULL, $1.name, $$.value); $$.nd = mknode($1.nd, $4.nd, "=", $$.value); 
                         sprintf(icg[ic_idx++], "%s = %s\n", $1.name, $4.name);
-                    }
+                    // }
                 }
                 
                 
@@ -374,7 +378,7 @@ assignment : IDENTIFIER { } ASSIGN expression {
                     sem_errors++;
                 }
             }
-           ;
+           
 
            ;
 
@@ -408,8 +412,8 @@ block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
            ; 
 
 relop_exp: term relop term {
-        if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} 
-        else {
+        // if(strcmp($1.type, $3.type)){sprintf(errors[sem_errors], "Line %d: Type mismatch in Boolean!\n", countn+1);sem_errors++;} 
+        // else {
             $$.nd = mknode($1.nd, $3.nd, $2.name, 0);
             if(is_for) {
                 char ifstt[400];
@@ -428,7 +432,7 @@ relop_exp: term relop term {
                 $$.tlist[$$.tlistsize++] = ic_idx-1;
                 $$.flist[$$.flistsize++] = ic_idx++;
             }
-        } 
+        // } 
 }
 
 boolean_exp: relop_exp LOGICAL_OR M boolean_exp { 
@@ -552,7 +556,7 @@ for_stmt : FOR { add('K');  is_for = 1; } for_clause block_stmt  {
     }
         ;
 
-for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);} boolean_exp SEMICOLON simple_stmt  {
+for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);} boolean_exp SEMICOLON for_clause1  {
         struct node* ass_bool = mknode($1.nd, $4.nd, "ass-bool", $$.value);  
         $$.nd = mknode(ass_bool, $6.nd, "FOR-CLAUSE", $$.value);
         sprintf(icg[ic_idx++], "LABEL L%d:\n", label++); 
@@ -567,6 +571,9 @@ for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label+
                 sprintf(icg[$4.flist[i]],"%s", gotha);
             } 
     }
+
+for_clause1 : simple_stmt { $$.nd = $1.nd; }
+            | { $$.nd = NULL;};
         ;
 
 println_stmt : PRINTLN { add('K'); } LPAREN print_param { $1.nd = mknode(NULL, NULL, "println", $$.value); $$.nd = mknode($1.nd, $4.nd, "PRINTLN", $$.value); }
