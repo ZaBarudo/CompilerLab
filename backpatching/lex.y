@@ -177,7 +177,8 @@ term: IDENTIFIER { if(check_declaration($1.name)){
     ;
 
 expression : term { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}     
-           | binary_op { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}       
+           | binary_op { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}     
+           | IDENTIFIER LSQPAREN expression RSQPAREN { $$.nd = mknode($1.nd, $3.nd, "array-indexing", $$.value); }  
            ;
 
 binary_op : expression op term { 
@@ -300,8 +301,29 @@ assignment : IDENTIFIER { } ASSIGN expression {
 
                     }
                 }
-                
             }
+            | IDENTIFIER LSQPAREN expression RSQPAREN ASSIGN expression { 
+                // Check if the identifier is declared and is an array
+                if (check_declaration($1.name) && is_array($1.name)) {
+                    // Check if the index expression is within bounds of the array
+                    int index = $3.value;
+                    int array_size = get_array_size($1.name);
+                    if (index < 0 || index >= array_size) {
+                        sprintf(errors[sem_errors], "Line %d: Array index out of bounds!\n", countn+1);
+                        sem_errors++;
+                    } else {
+                        // Assign the value to the array index
+                        assign_array_index($1.name, index, $6.value);
+                        // Construct AST nodes and intermediate code
+                        $$.nd = mknode($1.nd, $2.nd, "=", $$.value); 
+                        sprintf(icg[ic_idx++], "%s[%d] = %s\n", $1.name, index, $6.name);
+                    }
+                } else {
+                    sprintf(errors[sem_errors], "Line %d: Identifier is not an array!\n", countn+1);
+                    sem_errors++;
+                }
+            }
+           ;
 
            ;
 
