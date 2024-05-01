@@ -104,11 +104,11 @@
 %token <nd_obj> PACKAGE CHAN CONST DEFER FALLTHROUGH GO GOTO INTERFACE MAP RANGE SELECT STRUCT TYPE LPAREN RPAREN LBRACE RBRACE LSQPAREN RSQPAREN SEMICOLON
 %token <nd_obj> COMMA COLON BOOLEAN IDENTIFIER INTEGER STRING FLOAT COMMENT MULTI_LINE_COMMENT FLOAT_TYPE
 
-%type <nd_obj> program PackageClause declaration declaration1 function_declaration type literal TopLevelDecl TopLevelDeclList
+%type <nd_obj> program PackageClause declaration declaration1 function_declaration arguments type literal TopLevelDecl TopLevelDeclList
 %type <nd_obj> parameters parameter_unit signature array_length array_type
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
-%type <nd_obj2> number expression binary_op term array_access
+%type <nd_obj2> number expression binary_op term array_access function_call
 %type <nd_obj3> boolean_exp for_clause for_stmt relop_exp
 %type <nd_obj4> M
 
@@ -150,27 +150,48 @@ array_type : LSQPAREN array_length RSQPAREN type { $$.nd = mknode($2.nd, $4.nd, 
             ;
 array_length : expression { $$.nd = mknode(NULL, $1.nd, "array-len", $$.value); }
             ;
-array_access : IDENTIFIER LSQPAREN expression RSQPAREN { 
-                 if (check_declaration($1.name) && !strcmp(get_actual_type($1.name), "Array")) {
+array_access : IDENTIFIER {
+                    if (!check_declaration($1.name) || strcmp(get_actual_type($1.name), "Array")) {
+                        sprintf(errors[sem_errors], "Line %d: Unknown Error in Array Access!\n", countn+1);
+                        sem_errors++;
+                    }
+                } LSQPAREN expression RSQPAREN { 
+                
                     $$.value = get_arr_val($1.name, $3.value);
                     $1.nd = mknode(NULL, NULL, $1.name, $$.value);
-                    $$.nd = mknode($1.nd, $3.nd, "array-indexing", $$.value);
+                    $$.nd = mknode($1.nd, $4.nd, "array-indexing", $$.value);
                     strcpy($$.type, get_type($1.name));
-                    strcpy($$.name, $1.name);
-                } else {
-                    sprintf(errors[sem_errors], "Line %d: Unknown Error in Array Access!\n", countn+1);
-                    sem_errors++;
-                }
+                    
+                    char b[400] = "";
+                    
+                    strcat(b, $1.name);
+                    strcat(b, "[");
+                    strcat(b, $4.name);
+                    strcat(b, "]");
+                    // printf("mass %s\n", brobro);
+                    // sprintf(chumma, "%s %s", $1.name, $4.name);
+                    strcpy($$.name, b);
+                    // strcpy($$.name, chumma);
             }
 
 function_declaration : FUNCTION IDENTIFIER { add('F'); } signature block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $5.nd, "function", $$.value); }
                ;
 
-function_call : IDENTIFIER LPAREN arguments RPAREN SEMICOLON { check_declaration($1.name); $$.nd = mknode($1.nd, $3.nd, $1.name, $$.value); strcpy($$.type, get_type($1.name)); }
+function_call : IDENTIFIER LPAREN arguments RPAREN { 
+                    if(check_declaration($1.name) && !strcmp(get_actual_type($1.name), "Function")){
+                         $$.nd = mknode($1.nd, $3.nd, $1.name, $$.value); 
+                         strcpy($$.type, get_type($1.name)); 
+                         sprintf(icg[ic_idx++], "Func-Call: %s\n", $1.name);
+                    } else {
+                        sprintf(errors[sem_errors], "Line %d: Function not declared before!\n", countn+1);
+                        sem_errors++;
+                    }
+                }
               ;
 
-arguments : arguments COMMA term { $$.nd = mknode($1.nd, $3.nd, "arguments", $$.value); }
-          | term { $$.nd =$1.nd; }
+arguments : arguments COMMA expression { $$.nd = mknode($1.nd, $3.nd, "arguments", $$.value); sprintf(icg[ic_idx++], "Arg: %s\n", $3.name); }
+          | expression { $$.nd = $1.nd; sprintf(icg[ic_idx++], "Arg: %s\n", $1.name);}
+          | { $$.nd = NULL; }
           ;
 
 signature : LPAREN parameters RPAREN type { $$.nd = mknode($2.nd, NULL, "signature", $$.value); }
@@ -207,10 +228,10 @@ expression : term { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd;
            ;
 
 binary_op : expression op term { 
-        if(strcmp($1.type, $3.type)){
-            sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);
-            sem_errors++;
-        } else {
+        // if(strcmp($1.type, $3.type)){
+        //     sprintf(errors[sem_errors], "Line %d: Type mismatch in expression!\n", countn+1);
+        //     sem_errors++;
+        // } else {
             if(!strcmp($2.name, "+")){
                 $$.value = $3.value + $1.value;
             } else if(!strcmp($2.name, "-")){
@@ -219,7 +240,7 @@ binary_op : expression op term {
                 $$.value = $1.value * $3.value;
             }
             $$.nd = mknode($1.nd, $3.nd, $2.name, $$.value);
-        } 
+        // } 
         sprintf($$.name, "t%d", temp_var);
         temp_var++;
 
@@ -263,6 +284,7 @@ statement : declaration statement { $$.value = $1.value; $$.nd = mknode($1.nd, $
           | for_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement", $$.value) ;}  						
           | println_stmt statement { $$.nd = mknode($1.nd, $2.nd, "statement", $$.value) ;}  
           | COMMENT statement { $$.nd = mknode(NULL, $2.nd, "COMMENT", $$.value) ;}  
+          | function_call statement { $$.nd = mknode(NULL, $2.nd, "function-call", $$.value) ;}  
           | { $$.nd = NULL ;}  
           ;
 
@@ -607,9 +629,17 @@ int main() {
 	}
 	printf("\n\n");
     
+    FILE *file = fopen("icg.txt", "w");
+    // Check if file opened successfully
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
 	printf("\t\t\t\t\t\t\t   PHASE 4: INTERMEDIATE CODE GENERATION \n\n");
 	for(int i=0; i<ic_idx; i++){
 		printf("%s", icg[i]);
+        fprintf(file, "%s", icg[i]);
 	}
 	printf("\n\n");
     return 0;
@@ -631,6 +661,7 @@ char *get_type(char *var) {
             return symbol_table[i].data_type;  
         }
     }
+    return "N/A";
 }
 
 char *get_actual_type(char *var) { 
@@ -639,6 +670,8 @@ char *get_actual_type(char *var) {
             return symbol_table[i].type;  
         }
     }
+    return "N/A";
+
 }
 
 int search(char *type_n) { 

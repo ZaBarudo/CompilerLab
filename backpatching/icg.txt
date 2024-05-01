@@ -1,0 +1,15 @@
+t0 = a[0] + a[1]
+t1 = 1 * 8
+a[0] = t1
+t2 = a[0] + 1
+t3 = t2 * 1
+a[1] = t3
+if a[0] < a[1] GOTO L0
+GOTO L1
+LABEL L0:
+c = 1
+GOTO L2
+LABEL L1:
+LABEL L2:
+Arg: a
+Func-Call: hello
