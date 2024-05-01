@@ -32,7 +32,8 @@ func quickSort(arr []int) {
 }
 
 func main() {
-    arr := []int{3, 7, 2, 8, 1, 9, 4, 5, 6}
+    var arr [9]int
+    arr = [9]int {3, 7, 2, 8, 1, 9, 4, 5, 6}
     println("Unsorted array:", arr)
 
     quickSort(arr)

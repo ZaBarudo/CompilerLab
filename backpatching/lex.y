@@ -22,6 +22,8 @@
     int success = 1;
     struct node* mknode(struct node *left, struct node *right, char *token, int val);
     int add_val(char *type_n, int val);
+    int add_arr_val(char *type_n, int val, int idx);
+    int get_arr_val(char *type_n, int idx);
     int get_val(char *type_n);
     char *get_type(char *var);
     char *get_actual_type(char *var);
@@ -33,6 +35,7 @@
         char * type;
         int line_no;
         int value;
+        int * arr;
     } symbol_table[40];
     int count=0;
     int q;
@@ -41,6 +44,7 @@
     extern int countn;
     int sem_errors=0;
     char errors[10][100];
+    char buff1[100], buff2[100]; // Used for printing array accesses in binary_ops in ICG
     
     struct node *head;
     struct node { 
@@ -104,7 +108,7 @@
 %type <nd_obj> parameters parameter_unit signature array_length array_type
 %type <nd_obj> statement simple_stmt inc_dec_stmt assignment assign_op add_op_eq mul_op_eq return_stmt block_stmt 
 %type <nd_obj> if_stmt if_stmt1 println_stmt print_param thing return_ relop op
-%type <nd_obj2> number expression binary_op term
+%type <nd_obj2> number expression binary_op term array_access
 %type <nd_obj3> boolean_exp for_clause for_stmt relop_exp
 %type <nd_obj4> M
 
@@ -139,16 +143,36 @@ declaration : VAR { add('K'); } IDENTIFIER { r=strdup(yytext); lno = yylineno; }
             ;
 
 declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }   
-            | array_type { $$.nd = mknode(NULL, $1.nd, "variable", $$.value); }                                             
+            | array_type { add('A'); $$.nd = mknode(NULL, $1.nd, "array-variable", $$.value); }                                             
 ;
 
-array_type : LSQPAREN array_length RSQPAREN type { $$.nd = mknode($2.nd, $4.nd, "array-type", $$.value);}
+array_type : LSQPAREN array_length RSQPAREN type { $$.nd = mknode($2.nd, $4.nd, "array-type", $$.value); }
             ;
 array_length : expression { $$.nd = mknode(NULL, $1.nd, "array-len", $$.value); }
             ;
+array_access : IDENTIFIER LSQPAREN expression RSQPAREN { 
+                 if (check_declaration($1.name) && !strcmp(get_actual_type($1.name), "Array")) {
+                    $$.value = get_arr_val($1.name, $3.value);
+                    $1.nd = mknode(NULL, NULL, $1.name, $$.value);
+                    $$.nd = mknode($1.nd, $3.nd, "array-indexing", $$.value);
+                    strcpy($$.type, get_type($1.name));
+                    strcpy($$.name, $1.name);
+                } else {
+                    sprintf(errors[sem_errors], "Line %d: Unknown Error in Array Access!\n", countn+1);
+                    sem_errors++;
+                }
+            }
 
 function_declaration : FUNCTION IDENTIFIER { add('F'); } signature block_stmt { $2.nd = mknode(NULL, NULL, $2.name, $$.value); $$.nd = mknode($2.nd, $5.nd, "function", $$.value); }
                ;
+
+function_call : IDENTIFIER LPAREN arguments RPAREN SEMICOLON { check_declaration($1.name); $$.nd = mknode($1.nd, $3.nd, $1.name, $$.value); strcpy($$.type, get_type($1.name)); }
+              ;
+
+arguments : arguments COMMA term { $$.nd = mknode($1.nd, $3.nd, "arguments", $$.value); }
+          | term { $$.nd =$1.nd; }
+          ;
+
 signature : LPAREN parameters RPAREN type { $$.nd = mknode($2.nd, NULL, "signature", $$.value); }
             | LPAREN RPAREN type { $$.nd = mknode(NULL, NULL, "signature", $$.value); }
             | LPAREN parameters RPAREN { $$.nd = mknode($2.nd, NULL, "signature", $$.value); }
@@ -172,13 +196,14 @@ term: IDENTIFIER { if(check_declaration($1.name)){
         }
     }
     | number { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}
+    | array_access { $$.nd = $1.nd ; $$.value = $1.value; strcpy($$.type, get_type($1.name)); strcpy($$.name,$1.name);}
     | LPAREN expression RPAREN { $$.value = $2.value; strcpy($$.name,$2.name); $$.nd = $2.nd; strcpy($$.type, $2.type);
     }
     ;
 
 expression : term { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}     
            | binary_op { $$.value = $1.value; strcpy($$.name,$1.name); $$.nd = $1.nd; strcpy($$.type, $1.type);}     
-           | IDENTIFIER LSQPAREN expression RSQPAREN { $$.nd = mknode($1.nd, $3.nd, "array-indexing", $$.value); }  
+           | function_call { $$.value = $1.value; $$.nd = $1.nd; strcpy($$.type, $1.type); strcpy($$.type, $1.type);}
            ;
 
 binary_op : expression op term { 
@@ -197,6 +222,12 @@ binary_op : expression op term {
         } 
         sprintf($$.name, "t%d", temp_var);
         temp_var++;
+
+
+        // if(!strcmp(get_actual_type($1.name), "Array")){
+        //     strcpy(buff1, )
+        // }
+        
         sprintf(icg[ic_idx++], "%s = %s %s %s\n",  $$.name, $1.name, $2.name, $3.name);
 
     }          
@@ -304,20 +335,18 @@ assignment : IDENTIFIER { } ASSIGN expression {
             }
             | IDENTIFIER LSQPAREN expression RSQPAREN ASSIGN expression { 
                 // Check if the identifier is declared and is an array
-                if (check_declaration($1.name) && is_array($1.name)) {
-                    // Check if the index expression is within bounds of the array
+                if (check_declaration($1.name) && !strcmp(get_actual_type($1.name),"Array")) {
+
                     int index = $3.value;
-                    int array_size = get_array_size($1.name);
-                    if (index < 0 || index >= array_size) {
-                        sprintf(errors[sem_errors], "Line %d: Array index out of bounds!\n", countn+1);
-                        sem_errors++;
-                    } else {
-                        // Assign the value to the array index
-                        assign_array_index($1.name, index, $6.value);
-                        // Construct AST nodes and intermediate code
-                        $$.nd = mknode($1.nd, $2.nd, "=", $$.value); 
-                        sprintf(icg[ic_idx++], "%s[%d] = %s\n", $1.name, index, $6.name);
-                    }
+
+                    add_arr_val($1.name, $6.value, index);
+                    $$.value = $6.value;  
+                    // Construct AST nodes and intermediate code
+                    $1.nd = mknode(NULL, NULL, $1.name, $$.value);
+                    struct node *temp = mknode($1.nd, $3.nd, "array-access", $$.value);
+                    $$.nd = mknode(temp, $6.nd, "=", $$.value); //idk how to mknod here pls check @kvn
+                    sprintf(icg[ic_idx++], "%s[%d] = %s\n", $1.name, index, $6.name);
+
                 } else {
                     sprintf(errors[sem_errors], "Line %d: Identifier is not an array!\n", countn+1);
                     sem_errors++;
@@ -634,6 +663,26 @@ int add_val(char *type_n, int val) {
     return 0;
 }
 
+int add_arr_val(char *type_n, int val, int idx){
+    int i; 
+    for(i=count-1; i>=0; i--) {
+        if(strcmp(symbol_table[i].id_name, type_n)==0) {  
+            symbol_table[i].arr[idx] = val;
+            break;  
+        }
+    } 
+    return 0;
+}
+
+int get_arr_val(char *type_n, int idx){
+    int i; 
+    for(i=count-1; i>=0; i--) {
+        if(strcmp(symbol_table[i].id_name, type_n)==0) {  
+            return symbol_table[i].arr[idx];
+        }
+    } 
+    return 0;
+}
 int get_val(char *type_n) { 
     int i; 
     for(i=count-1; i>=0; i--) {
@@ -669,6 +718,14 @@ void add(char c) {
         symbol_table[count].data_type=strdup(type_n);
         symbol_table[count].line_no=lno;
         symbol_table[count].type=strdup("Variable");   
+        count++;  
+        }
+        else if(c == 'A') {
+        symbol_table[count].id_name=strdup(r);
+        symbol_table[count].data_type=strdup(type_n);
+        symbol_table[count].line_no=lno;
+        symbol_table[count].type=strdup("Array");
+        symbol_table[count].arr= (int*) malloc(100 * sizeof(int)); 
         count++;  
         }
         else if(c == 'C') {
@@ -723,6 +780,7 @@ void printBTHelper(char* prefix, struct node* ptr, int isLeft) {
     	free(result);
     }
 }
+
 
 void printBT(struct node* ptr) {
 	printf("\n");
