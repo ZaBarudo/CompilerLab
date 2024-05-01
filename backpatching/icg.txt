@@ -27,9 +27,9 @@ right = t2
 GOTO L10
 LABEL L9:
 LABEL L10:
-d[-1] = temp
-d[-1] = d[left]
-d[1] = temp
+d[right] = temp
+d[right] = d[left]
+d[left] = temp
 t3 = left + 1
 left = t3
 t4 = right - 1
@@ -38,10 +38,10 @@ JUMP to L9
 
 LABEL L11:
 t5 = n - 1
-d[-1] = temp1
+d[t5] = temp1
 t6 = n - 1
-d[-1] = d[left]
-d[2] = temp1
+d[t6] = d[left]
+d[left] = temp1
 Arg: d[9]
 Arg: n
 Arg: 0

@@ -371,7 +371,7 @@ assignment : IDENTIFIER { } ASSIGN expression {
                     $1.nd = mknode(NULL, NULL, $1.name, $$.value);
                     struct node *temp = mknode($1.nd, $3.nd, "array-access", $$.value);
                     $$.nd = mknode(temp, $6.nd, "=", $$.value); //idk how to mknod here pls check @kvn
-                    sprintf(icg[ic_idx++], "%s[%d] = %s\n", $1.name, index, $6.name);
+                    sprintf(icg[ic_idx++], "%s[%s] = %s\n", $1.name, $3.name, $6.name);
 
                 } else {
                     sprintf(errors[sem_errors], "Line %d: Identifier is not an array!\n", countn+1);
