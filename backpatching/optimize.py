@@ -70,6 +70,8 @@ for i in range(len(lines)):
                     exp[j] = variables[exp[j]]
             lines[i] = lhs + '=' + ' '.join(exp)
 
+
+
 # Constant folding after constant propagation
 for i in range(len(lines)):
     if ('=' in lines[i] and lines[i].count('=') == 1):
@@ -79,6 +81,7 @@ for i in range(len(lines)):
             lines[i] = lhs + '= ' + str(result)
         except:
             pass
+
 
 # Constant propagation after constant folding
 for i in range(len(lines)):
@@ -94,6 +97,14 @@ for i in range(len(lines)):
                 if exp[j] in variables:
                     exp[j] = variables[exp[j]]
             lines[i] = lhs + '=' + ' '.join(exp)
+
+for i in range(len(lines)):
+    if ('Arg' in lines[i]):
+        lhs, rhs = lines[i].split(': ')
+        # print (lhs, rhs)
+        # try:
+        if ('t' in rhs and rhs in variables):
+            lines[i] = lhs + ': ' + variables[rhs]
 
 for i in temp_to_remove:
     lines[i] = ''
