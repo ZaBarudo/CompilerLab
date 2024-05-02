@@ -758,12 +758,12 @@ void add(char c) {
         symbol_table[count].data_type=strdup(type_n);
         symbol_table[count].line_no=lno;
         symbol_table[count].type=strdup("Variable");   
-        count++;  line_no
+        count++;  
         }
         else if(c == 'A') {
         symbol_table[count].id_name=strdup(r);
         symbol_table[count].data_type=strdup(type_n);
-        symbol_table[count].=lno;
+        symbol_table[count].line_no=lno;
         symbol_table[count].type=strdup("Array");
         symbol_table[count].arr= (int*) malloc(100 * sizeof(int)); 
         count++;  

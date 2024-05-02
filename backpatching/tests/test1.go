@@ -1,6 +1,6 @@
 package main
 
-func hello( d[9]int, n int, left int, right int) int{
+func qsort( d[9]int, n int, left int, right int) int{
    if n <= 1 {
       return
    }
@@ -37,8 +37,8 @@ func hello( d[9]int, n int, left int, right int) int{
    d[n-1] = d[left]
    d[left] = temp1
 
-   hello(d[9], n, 0, left)
-   hello(d[9], n, left+1, right)
+   qsort(d[9], n, 0, left)
+   qsort(d[9], n, left+1, right)
    // e = a[0] + a[1]
 }
 
@@ -52,7 +52,7 @@ func main() int{
    a[4] = 6+1
 
 
-   hello(a[9], k, 0, 3)
+   qsort(a[9], k, 0, 3)
 
    return 0
 }
