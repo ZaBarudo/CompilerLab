@@ -1,15 +1,12 @@
 package main
 
-func main() {
-    //note: assignment and declaration cannot happen on same line of code
+func main() int{
+    
     var b int 
     b = 20
     var a int
     a = 10
-    var a int
-    a = 5
-    resultl = a+b
-    println(resultl)
+    b = a*2
 
-    
+    return 0
 }

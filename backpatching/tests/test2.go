@@ -1,13 +1,12 @@
 package main
 
-func main() {
-    var a int
-    var b int
-    a = 10
-    b = 20
-    if a < b {
-        println("a is less than b")
-    } else {
-        println("a is greater than or equal to b")
-    }
+func main() int{
+    
+    var c int
+    var d int
+    
+    c = 5 + 10
+    d  = 5*3-9
+    return 0
 }
+
