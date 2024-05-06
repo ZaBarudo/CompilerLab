@@ -12,7 +12,7 @@ func main() {
     b = 1
     c = 2
     d = b + c
-    fmt.Println(d)$
+    fmt.Println(d)
     /* hello
     and hello
     and hello  */

@@ -1,2 +1,8 @@
 compiler
 lex.yy.c
+parser
+y.tab.h
+y.tab.c
+y.output
+optimized.txt
+icg.txt
