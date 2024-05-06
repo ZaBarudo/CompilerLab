@@ -7,10 +7,5 @@ func main(){
     b =  1.1
     a =  1 + a
     c = false+true
-    println(a+1)
-    if a < 1 {
-        b++
-        
-    }
-    return c
+
 }

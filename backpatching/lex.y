@@ -408,7 +408,7 @@ return_stmt : RETURN { add('K'); } return_ { $1.nd = mknode(NULL, NULL, "return"
 return_ : thing { strcpy(type_temp, get_actual_type($1.name)); if(!strcmp(type_temp, "Variable") || !strcmp(type_temp, "Constant")){$$.nd = $1.nd; } else {sprintf(errors[sem_errors], "Line %d: Invalid return\n", countn+1);sem_errors++;}}
         | { $$.nd = NULL ;}
 
-block_stmt : LBRACE statement RBRACE { $$.nd = $2.nd; }
+block_stmt : LBRACE {sprintf(icg[ic_idx++], "\nBLOCK LEADER\n");} statement RBRACE { $$.nd = $3.nd; }
            ; 
 
 relop_exp: term relop term {
@@ -497,7 +497,7 @@ M: {
     char new1[100];
     sprintf(new1, "%d:\n", ic_idx);
     char new2[100];
-    sprintf(new2, "LABEL L");
+    sprintf(new2, "BLOCK L");
     strcat(new2, new1);
     strcpy(icg[ic_idx], new2);
  };
@@ -520,7 +520,7 @@ if_stmt : IF { add('K'); is_for = 0; } boolean_exp {
             for(int i=0;i<$3.flistsize;i++){
                 printf("%d\n",$3.flist[i]);
             }
-            sprintf(icg[ic_idx++], "LABEL L%d:\n", label++); 
+            sprintf(icg[ic_idx++], "BLOCK L%d:\n", label++); 
             for(int i=0;i<$3.tlistsize;i++){
                 char gotha[20];
                 sprintf(gotha, "GOTO L%d\n", label-1);
@@ -528,9 +528,9 @@ if_stmt : IF { add('K'); is_for = 0; } boolean_exp {
             }
         } 
         block_stmt { 
-            // sprintf(icg[ic_idx++], "GOTO %s\n\n", $3.after_else_body); sprintf(icg[ic_idx++], "LABEL %s:\n", $3.else_body); 
+            // sprintf(icg[ic_idx++], "GOTO %s\n\n", $3.after_else_body); sprintf(icg[ic_idx++], "BLOCK %s:\n", $3.else_body); 
             sprintf(icg[ic_idx++],"GOTO L%d\n", label+1);
-            sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);
+            sprintf(icg[ic_idx++], "BLOCK L%d:\n", label++);
             for(int i=0;i<$3.flistsize;i++){
                 char gotha[20];
                 sprintf(gotha, "GOTO L%d\n", label-1);
@@ -539,7 +539,7 @@ if_stmt : IF { add('K'); is_for = 0; } boolean_exp {
         } 
         if_stmt1 { 
             // sprintf(icg[ic_idx++], "\nLABEL %s:\n", $3.after_else_body); 
-            sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);
+            sprintf(icg[ic_idx++], "BLOCK L%d:\n", label++);
             cond_if = mknode($3.nd, $5.nd, "IF-STUFF", 0); 
             $$.nd = mknode(cond_if, $7.nd, "IF-PART", 0); 
         };
@@ -556,10 +556,10 @@ for_stmt : FOR { add('K');  is_for = 1; } for_clause block_stmt  {
     }
         ;
 
-for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "LABEL L%d:\n", label++);} boolean_exp SEMICOLON for_clause1  {
+for_clause : assignment SEMICOLON {sprintf(icg[ic_idx++], "BLOCK L%d:\n", label++);} boolean_exp SEMICOLON for_clause1  {
         struct node* ass_bool = mknode($1.nd, $4.nd, "ass-bool", $$.value);  
         $$.nd = mknode(ass_bool, $6.nd, "FOR-CLAUSE", $$.value);
-        sprintf(icg[ic_idx++], "LABEL L%d:\n", label++); 
+        sprintf(icg[ic_idx++], "BLOCK L%d:\n", label++); 
         for(int i=0;i<$4.tlistsize;i++){
                 char gotha[20];
                 sprintf(gotha, "GOTO L%d\n", label-1);

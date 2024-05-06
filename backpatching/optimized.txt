@@ -1,5 +1,78 @@
 
-c = 15
+BLOCK LEADER
+if n <= 1 GOTO L0
+GOTO L1
+BLOCK L0:
 
+BLOCK LEADER
+GOTO L2
+BLOCK L1:
+BLOCK L2:
+t0 = n - 1
+pivot = d[t0]
 
-d = 6
+BLOCK L3:
+if left <= right GOTO L4
+GOTO L5
+BLOCK L4:
+
+BLOCK LEADER
+if d[left] <= pivot GOTO L5
+GOTO L6
+BLOCK L5:
+
+BLOCK LEADER
+
+left = 1
+GOTO L7
+BLOCK L6:
+BLOCK L7:
+if d[right] > pivot GOTO L8
+GOTO L9
+BLOCK L8:
+
+BLOCK LEADER
+t2 = right - 1
+right = t2
+GOTO L10
+BLOCK L9:
+BLOCK L10:
+d[right] = temp
+d[right] = d[left]
+d[left] = temp
+
+left = 1
+t4 = right - 1
+right = t4
+JUMP to L9
+
+LABEL L11:
+t5 = n - 1
+d[t5] = temp1
+t6 = n - 1
+d[t6] = d[left]
+d[left] = temp1
+Arg: d[9]
+Arg: n
+Arg: 0
+Arg: 0
+Func-Call: qsort
+Arg: d[9]
+Arg: n
+
+Arg: 1
+Arg: right
+Func-Call: qsort
+
+BLOCK LEADER
+a[0] = 1
+a[1] = 2
+a[2] = 3
+a[3] = 5
+
+a[4] = 7
+Arg: a[9]
+Arg: k
+Arg: 0
+Arg: 3
+Func-Call: qsort

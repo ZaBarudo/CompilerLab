@@ -101,7 +101,7 @@ declaration1 : type { add('V'); $$.nd = mknode(NULL, $1.nd, "variable"); }
 function_declaration : FUNCTION IDENTIFIER { add('F'); } LPAREN RPAREN block_stmt { $2.nd = mknode(NULL, NULL, $2.name); $$.nd = mknode($2.nd, $6.nd, "function"); }
                      ;
 
-thing : IDENTIFIER { check_declaration($1.name); $$.nd = mknode(NULL, NULL, $1.name);}
+thing : IDENTIFIER { if(check_declaration($1.name)){ $$.nd = mknode(NULL, NULL, $1.name);}}
       | literal {$$.nd = $1.nd;}
       ;
 
